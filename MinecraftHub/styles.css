@@ -1,0 +1,84 @@
+@font-face {
+    font-family: 'Minecraft';
+    src: url('fonts/Minecraft.ttf') format('truetype');
+  }
+@font-face {
+    font-family: 'MinecraftHeader';
+    src: url('fonts/Minecrafter.Reg.ttf');
+}
+  
+body {
+    background-color: #3D3938;
+    color: #fff;
+    font-family: 'Minecraft', sans-serif;
+    text-align: center;
+}
+
+  h1 {
+    font-family: 'MinecraftHeader', sans-serif;
+  }
+button {
+  background-color: white;
+  font-family: 'Minecraft', sans-serif;
+  transition: background-color .3s;
+}
+
+button:hover {
+  background-color: #04AA6D;
+  color: white;
+}
+
+button:active {
+  transform: translateY(4px);
+  background-color: #04AA6D;
+  color: white;
+}
+
+div.active_servers {
+  background-color: #262423;
+  border: 4px solid #1f1e1e;
+  height: 25%;
+  width: 25%;
+  padding: 50px;
+}
+
+div.active_servers h1 {
+  color:#04AA6D;
+  font-family: 'Minecraft', sans-serif;
+}
+
+div.active_servers p {
+  color: white;
+  font-family: 'Minecraft', sans-serif;
+}
+
+.mycontainer button {
+  padding: 5%;
+  font-size: 40px;
+  background-color: #ffffff;
+}
+
+.mycontainer button:active {
+  transform: translateY(4px);
+  background-color: #04AA6D;
+  color: white;
+}
+
+.mycontainer button:hover {
+  background-color: #04AA6D;
+  color: white;
+}
+
+
+div.mycontainer {
+  overflow:auto;
+}
+div.mycontainer div {
+  width:33%;  
+  float:left;
+}
+
+.myButton.active {
+  background-color: green;
+  color: #ffffff;
+}

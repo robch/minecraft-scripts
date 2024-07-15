@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Minecraft Server hub</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Welcome to my minecraft server hub</h1>
+
+    <div class="mycontainer">
+        <div class="active_servers">
+            <h1>mc.mbers.us</h1>
+            <p>This is the 1st server</p>
+        </div>
+        <div>
+            <button class="arrowButton">&larr;</button>
+        </div>
+    </div>
+
+    <div class="mycontainer">
+        <div class="active_servers">
+            <h1>mc2.mbers.us</h1>
+            <p>This is the 2nd server</p>
+        </div>
+        <div>
+            <button class="arrowButton">&larr;</button>
+        </div>
+    </div>
+
+
+    <div id="worldDiv" class="worlds">
+        <p>Different worlds</p>
+    </div>
+
+<script>
+
+    var worldDiv = document.getElementById ("worldDiv");
+    for (var i = 1; i <= 6; i++) {
+        var btn = document.createElement("BUTTON");
+        btn.className = "myButton";
+        btn.innerHTML = `World ${i}`;
+        worldDiv.appendChild(btn);
+    }
+
+    // Get all buttons with class="myButton"
+    var btns = document.getElementsByClassName("myButton");
+
+    // Loop through the buttons and add the active class to the clicked button
+    for (var i = 0; i < btns.length; i++) {
+        btns[i].addEventListener("click", function() {
+            var activeButtons = document.getElementsByClassName("active");
+            
+            // If there's an active button, remove its active class
+            var activateThis = true;
+            for (var x = 0; x < activeButtons.length; x++) {
+                if (this == activeButtons[x]) {
+                    activateThis = false;
+                }
+                activeButtons[x].className = activeButtons[x].className.replace(" active", "");
+            }
+
+            // Add the active class to the clicked button
+            if (activateThis == true) {
+                this.className += " active";
+            }
+        });
+    }
+
+    var abtns = document.getElementsByClassName("arrowButton");
+
+    for (var i = 0; i < abtns.length; i++) {
+        abtns[i].addEventListener("click", function() {
+            var activeButtons = document.getElementsByClassName("active");
+            if (activeButtons.length != 1) {
+                alert("ERROR: You must select a world");
+            }
+            else {
+                var world = activeButtons[0].innerHTML;
+                alert(`SUCCESS: ${world} activated`);
+            }
+        });
+    }
+</script>
+
+</body>
+</html>
