@@ -18,9 +18,9 @@ body {
     text-align: center;
 }
 
-  h1 {
-    font-family: 'MinecraftHeader', sans-serif;
-  }
+h1 {
+  font-family: 'MinecraftHeader', sans-serif;
+}
 button {
   background-color: white;
   font-family: 'Minecraft', sans-serif;
@@ -94,4 +94,9 @@ div.mycontainer div {
 .worlds {
   color: coral;
   float:right;
+}
+
+.myButton:active {
+  background-color: green;
+  color: #ffffff;
 }
