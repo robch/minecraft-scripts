@@ -7,7 +7,7 @@ if [ ! -d $TARGET_DIR ]; then
   mkdir -p $TARGET_DIR
 fi
 
-curl -L https://api.papermc.io/v2/projects/paper/versions/1.21/builds/46/downloads/paper-1.21-46.jar --output $TARGET_DIR/paper-1.21-46.jar
+curl -L https://api.papermc.io/v2/projects/paper/versions/1.21/builds/60/downloads/paper-1.21-60.jar --output $TARGET_DIR/paper-1.21-60.jar
 
 if [ ! -e $TARGET_DIR/ops.json ]; then
   cp ops.json $TARGET_DIR/ops.json
