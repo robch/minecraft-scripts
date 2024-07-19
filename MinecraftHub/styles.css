@@ -7,6 +7,10 @@
     src: url('fonts/Minecrafter.Reg.ttf');
 }
   
+:root {
+  --worldImage: 48px;
+}
+
 body {
     background-color: #3D3938;
     color: #fff;
@@ -83,6 +87,11 @@ div.mycontainer div {
   color: #ffffff;
 }
 
+.myButton {
+  height: var(--worldImage);
+}
+
 .worlds {
   color: coral;
+  float:right;
 }
