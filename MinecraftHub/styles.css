@@ -1,26 +1,30 @@
+/* CSS */
 @font-face {
-    font-family: 'Minecraft';
-    src: url('fonts/Minecraft.ttf') format('truetype');
-  }
-@font-face {
-    font-family: 'MinecraftHeader';
-    src: url('fonts/Minecrafter.Reg.ttf');
+  font-family: 'Minecraft';
+  src: url('fonts/Minecraft.ttf') format('truetype');
 }
-  
+@font-face {
+  font-family: 'MinecraftHeader';
+  src: url('fonts/Minecrafter.Reg.ttf');
+}
+
 :root {
   --worldImage: 48px;
 }
 
 body {
-    background-color: #3D3938;
-    color: #fff;
-    font-family: 'Minecraft', sans-serif;
-    text-align: center;
+  background-color: #3D3938;
+  color: #fff;
+  font-family: 'Minecraft', sans-serif;
+  text-align: center;
+  position: relative;
 }
 
 h1 {
   font-family: 'MinecraftHeader', sans-serif;
+  margin-bottom: 20px;
 }
+
 button {
   background-color: white;
   font-family: 'Minecraft', sans-serif;
@@ -73,13 +77,13 @@ div.active_servers p {
   color: white;
 }
 
-
 div.mycontainer {
-  overflow:auto;
+  overflow: auto;
 }
+
 div.mycontainer div {
-  width:33%;  
-  float:left;
+  width: 33%;  
+  float: left;
 }
 
 .myButton.active {
@@ -89,14 +93,36 @@ div.mycontainer div {
 
 .myButton {
   height: var(--worldImage);
+  margin: 5px; /* Add margin between buttons */
 }
 
 .worlds {
-  color: coral;
-  float:right;
+  color: #04AA6D;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  position: absolute;
+  top: 100px;
+  right: 20px;
+}
+
+#buttonContainer {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
 }
 
 .myButton:active {
   background-color: green;
   color: #ffffff;
+}
+
+.catalogue {
+  text-align: center;
+  background-color: #262423;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+
+  width: 50%;
 }

@@ -30,73 +30,78 @@
     </div>
 
     <div id="worldDiv" class="worlds">
-        <p>Different worlds</p>
+        <div class="catalogue">
+            <h2>Different worlds</h2>
+            <div id="buttonContainer">
+                <!-- Buttons will be appended here by JavaScript -->
+            </div>
+        </div>
     </div>
 
-<script>
-    var btns = document.getElementsByClassName("myButton");
-    fetch('http://localhost:8080/worlds')
-        .then(Response => {
-            if (!Response.ok) {
-                throw new Error('Network response was not ok')
-            }
-            return Response.json();
-        })
+    <script>
+        var btns = document.getElementsByClassName("myButton");
+        fetch('http://localhost:8080/worlds')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(worlds => {
+                console.log('Worlds fetched successfully');
 
-        .then(worlds => {
-            console.log('Worlds fetched succesfully');
+                // Check if worlds is an array
+                if (!Array.isArray(worlds)) {
+                    throw new Error('Fetched data is not an array');
+                } else {
+                    console.log('worlds is an array');
+                }
 
-            // Check if worlds is an array
-            if (!Array.isArray(worlds)) {
-                throw new Error('Fetched data is not an array');
-            }
-            else {
-                console.log('worlds is an array');
-            }
+                var buttonContainer = document.getElementById("buttonContainer");
 
-            var worldDiv = document.getElementById ("worldDiv");
-
-            worlds.forEach((world, index) => {
-                // Create the button element
-                var btn = document.createElement("BUTTON");
-                btn.className = "myButton";
-                btn.innerHTML = `${world.Name}`;
-                console.log('Creating button:', btn); // Debugging statement
-                
-                btn.addEventListener("click", function() {
-                            if (this.classList.contains("active")) {
-                                // If the button is already active, remove the active class
-                                this.classList.remove("active");
-                            } else {
-                                // Remove the active class from all other buttons
-                                const activeButtons = document.getElementsByClassName("active");
-                                for (let x = 0; x < activeButtons.length; x++) {
-                                    activeButtons[x].classList.remove("active");
-                                }
-                                // Add the active class to the clicked button
-                                this.classList.add("active");
+                worlds.forEach((world, index) => {
+                    // Create the button element
+                    var btn = document.createElement("BUTTON");
+                    btn.className = "myButton";
+                    btn.innerHTML = `${world.Name}`;
+                    console.log('Creating button:', btn); // Debugging statement
+                    
+                    btn.addEventListener("click", function() {
+                        if (this.classList.contains("active")) {
+                            // If the button is already active, remove the active class
+                            this.classList.remove("active");
+                        } else {
+                            // Remove the active class from all other buttons
+                            const activeButtons = document.getElementsByClassName("active");
+                            for (let x = 0; x < activeButtons.length; x++) {
+                                activeButtons[x].classList.remove("active");
                             }
-                        });
-                        
-                worldDiv.appendChild(btn);
+                            // Add the active class to the clicked button
+                            this.classList.add("active");
+                        }
+                    });
+                    
+                    buttonContainer.appendChild(btn);
+                });
+            })
+            .catch(error => {
+                console.error('Fetching error:', error);
             });
-        })
 
-    var abtns = document.getElementsByClassName("arrowButton");
+        var abtns = document.getElementsByClassName("arrowButton");
 
-    for (var i = 0; i < abtns.length; i++) {
-        abtns[i].addEventListener("click", function() {
-            var activeButtons = document.getElementsByClassName("active");
-            if (activeButtons.length != 1) {
-                alert("ERROR: You must select a world");
-            }
-            else {
-                var world = activeButtons[0].innerHTML;
-                alert(`SUCCESS: ${world} activated`);
-            }
-        });
-    }
-</script>
+        for (var i = 0; i < abtns.length; i++) {
+            abtns[i].addEventListener("click", function() {
+                var activeButtons = document.getElementsByClassName("active");
+                if (activeButtons.length != 1) {
+                    alert("ERROR: You must select a world");
+                } else {
+                    var world = activeButtons[0].innerHTML;
+                    alert(`SUCCESS: ${world} activated`);
+                }
+            });
+        }
+    </script>
 
 </body>
 </html>
