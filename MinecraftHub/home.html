@@ -38,6 +38,30 @@
         </div>
     </div>
 
+    
+    
+    <div id="SWError" class="modal">
+
+        <!-- Modal content -->
+        <div class="modal-content">
+          <span class="close">&times;</span>
+          <p>Error please select a world</p>
+          <button class="dismiss_OK">okay</button>
+        </div>
+        </div>
+
+      <div id="Success" class="modal">
+
+        <!-- Modal content -->
+        <div class="modal-content">
+          <span class="close">&times;</span>
+          <p>Please confirm that you want to start this world by hitting the confirm button</p>
+        </div>
+      
+      </div>
+
+
+
     <script>
         var btns = document.getElementsByClassName("myButton");
         fetch('http://localhost:8080/worlds')
@@ -89,18 +113,45 @@
             });
 
         var abtns = document.getElementsByClassName("arrowButton");
+        var modal_E = document.getElementById("SWError");
+        var modal_S = document.getElementById("Success");
+        var span = document.getElementsByClassName("close")[0];
+
 
         for (var i = 0; i < abtns.length; i++) {
             abtns[i].addEventListener("click", function() {
                 var activeButtons = document.getElementsByClassName("active");
                 if (activeButtons.length != 1) {
-                    alert("ERROR: You must select a world");
+                    modal_E.style.display = "block";
                 } else {
                     var world = activeButtons[0].innerHTML;
-                    alert(`SUCCESS: ${world} activated`);
+                    modal_S.style.display = "block";
                 }
             });
         }
+
+        span.onclick = function() {
+            modal_S.style.display = "none";
+        }
+
+        span.onclick = function() {
+            modal_E.style.display = "none";
+            modal_S.style.display = "none";
+        }
+
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function(event) {
+        if (event.target == modal_E) {
+            modal_E.style.display = "none";
+            }
+        }
+        window.onclick = function(event) {
+
+        if (event.target == modal_S) {
+            modal_S.style.display = "none";
+        }
+        }
+
     </script>
 
 </body>
