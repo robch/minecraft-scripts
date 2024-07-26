@@ -15,7 +15,7 @@
             <p>This is the 1st server</p>
         </div>
         <div>
-            <button class="arrowButton">&larr;</button>
+            <button class="arrowButton" onclick="playSound()">&larr;</button>
         </div>
     </div>
 
@@ -25,7 +25,7 @@
             <p>This is the 2nd server</p>
         </div>
         <div>
-            <button class="arrowButton">&larr;</button>
+            <button class="arrowButton" onclick="playSound()">&larr;</button>
         </div>
     </div>
 
@@ -37,16 +37,14 @@
             </div>
         </div>
     </div>
-
-    
     
     <div id="SWError" class="modal">
 
         <!-- Modal content -->
         <div class="modal-content">
-          <span class="close">&times;</span>
+          <span class="close"  onclick="playSound()">&times;</span>
           <p>Error please select a world</p>
-          <button class="dismiss_OK">okay</button>
+          <button class="dismiss_OK" onclick="playSound()">okay</button>
         </div>
         </div>
 
@@ -54,8 +52,9 @@
 
         <!-- Modal content -->
         <div class="modal-content">
-          <span class="close">&times;</span>
+          <span class="close"  onclick="playSound()">&times;</span>
           <p>Please confirm that you want to start this world by hitting the confirm button</p>
+          <button class="confirm" onclick="playSound()">confirm</button>
         </div>
       
       </div>
@@ -63,6 +62,15 @@
 
 
     <script>
+        // Create a new audio object for the button click sound
+        var buttonClickSound = new Audio('./minecraft-click-cropped.mp3');
+
+        // Function to play the sound
+        function playSound() {
+            buttonClickSound.play();
+        }
+
+
         var btns = document.getElementsByClassName("myButton");
         fetch('http://localhost:8080/worlds')
             .then(response => {
@@ -72,39 +80,23 @@
                 return response.json();
             })
             .then(worlds => {
-                console.log('Worlds fetched successfully');
-
-                // Check if worlds is an array
-                if (!Array.isArray(worlds)) {
-                    throw new Error('Fetched data is not an array');
-                } else {
-                    console.log('worlds is an array');
-                }
-
                 var buttonContainer = document.getElementById("buttonContainer");
-
                 worlds.forEach((world, index) => {
-                    // Create the button element
                     var btn = document.createElement("BUTTON");
                     btn.className = "myButton";
                     btn.innerHTML = `${world.Name}`;
-                    console.log('Creating button:', btn); // Debugging statement
-                    
                     btn.addEventListener("click", function() {
+                        playSound(); // Play sound on button click
                         if (this.classList.contains("active")) {
-                            // If the button is already active, remove the active class
                             this.classList.remove("active");
                         } else {
-                            // Remove the active class from all other buttons
                             const activeButtons = document.getElementsByClassName("active");
                             for (let x = 0; x < activeButtons.length; x++) {
                                 activeButtons[x].classList.remove("active");
                             }
-                            // Add the active class to the clicked button
                             this.classList.add("active");
                         }
                     });
-                    
                     buttonContainer.appendChild(btn);
                 });
             })
@@ -113,42 +105,42 @@
             });
 
         var abtns = document.getElementsByClassName("arrowButton");
-        var modal_E = document.getElementById("SWError");
-        var modal_S = document.getElementById("Success");
-        var span = document.getElementsByClassName("close")[0];
+  
+        var errorModal = document.getElementById("SWError");
+        var successModal = document.getElementById("Success");
+        var closeButtons = document.getElementsByClassName("close");
+        var okButton = document.querySelector(".dismiss_OK");
+        var confirmButton = document.getElementsByClassName
 
 
         for (var i = 0; i < abtns.length; i++) {
             abtns[i].addEventListener("click", function() {
                 var activeButtons = document.getElementsByClassName("active");
                 if (activeButtons.length != 1) {
-                    modal_E.style.display = "block";
+                    errorModal.style.display = "block";
                 } else {
                     var world = activeButtons[0].innerHTML;
-                    modal_S.style.display = "block";
+                    successModal.style.display = "block";
                 }
             });
         }
 
-        span.onclick = function() {
-            modal_S.style.display = "none";
+        Array.from(closeButtons).forEach(button => {
+        button.onclick = function() {
+            this.parentElement.parentElement.style.display = "none";
+        }
+        });
+
+        okButton.onclick = function() {
+        errorModal.style.display = "none";
         }
 
-        span.onclick = function() {
-            modal_E.style.display = "none";
-            modal_S.style.display = "none";
-        }
-
-        // When the user clicks anywhere outside of the modal, close it
         window.onclick = function(event) {
-        if (event.target == modal_E) {
-            modal_E.style.display = "none";
-            }
+        if (event.target == errorModal) {
+            errorModal.style.display = "none";
         }
-        window.onclick = function(event) {
-
-        if (event.target == modal_S) {
-            modal_S.style.display = "none";
+        if (event.target == successModal) {
+            successModal.style.display = "none";
         }
         }
 

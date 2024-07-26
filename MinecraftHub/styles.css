@@ -170,11 +170,29 @@ div.mycontainer div {
 }
 
 #Success {
-  color: coral;
+  color: green;
+}
+
+#Success.modal-content {
+  background-color: #1f1e1e;
+  margin: auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
+  height: 100px;
 }
 
 #SWError {
   color: red;
+}
+
+#SWError.modal-content {
+  background-color: #1f1e1e;
+  margin: auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
+  height: 100px;
 }
 
 button.dismiss_OK {
