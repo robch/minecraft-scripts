@@ -127,8 +127,6 @@ div.mycontainer div {
   width: 50%;
 }
 
-
-
 /* The Modal (background) */
 .modal {
   display: none; /* Hidden by default */
@@ -151,7 +149,7 @@ div.mycontainer div {
   padding: 20px;
   border: 1px solid #888;
   width: 80%;
-  height: 100px;
+  height: auto;
 }
 
 /* The Close Button */
@@ -170,7 +168,7 @@ div.mycontainer div {
 }
 
 #Success {
-  color: green;
+  color: rgb(12, 150, 12);
 }
 
 #Success.modal-content {
@@ -179,7 +177,7 @@ div.mycontainer div {
   padding: 20px;
   border: 1px solid #888;
   width: 80%;
-  height: 100px;
+  height: auto;
 }
 
 #SWError {
@@ -196,6 +194,37 @@ div.mycontainer div {
 }
 
 button.dismiss_OK {
+  background-color: cornflowerblue;
+  padding: 10px;
+  color: #ffffff;
+  font-size: 15px;
+}
+
+.loader {
+  border: 16px solid #3e3e3e;
+  border-radius: 50%;
+  border-top: 16px solid #04AA6D;
+  width: 120px;
+  height: 120px;
+  -webkit-animation: spin 2s linear infinite; /* Safari */
+  animation: spin 2s linear infinite;
+  display: inline;
+  margin: auto;
+  padding: 10px;
+}
+
+/* Safari */
+@-webkit-keyframes spin {
+  0% { -webkit-transform: rotate(0deg); }
+  100% { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+button.confirm {
   background-color: cornflowerblue;
   padding: 10px;
   color: #ffffff;

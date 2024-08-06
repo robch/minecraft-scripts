@@ -8,7 +8,6 @@
 </head>
 <body>
     <h1>Welcome to my minecraft server hub</h1>
-
     <div class="mycontainer">
         <div class="active_servers">
             <h1>mc.mbers.us</h1>
@@ -53,24 +52,19 @@
         <!-- Modal content -->
         <div class="modal-content">
           <span class="close"  onclick="playSound()">&times;</span>
-          <p>Please confirm that you want to start this world by hitting the confirm button</p>
+          <p id="successCap">Please confirm that you want to start this world by hitting the confirm button</p>
+          <div class="loader"></div>
           <button class="confirm" onclick="playSound()">confirm</button>
         </div>
       
       </div>
-
-
-
-    <script>
-        // Create a new audio object for the button click sound
+      <script>
         var buttonClickSound = new Audio('./minecraft-click-cropped.mp3');
-
-        // Function to play the sound
+    
         function playSound() {
             buttonClickSound.play();
         }
-
-
+    
         var btns = document.getElementsByClassName("myButton");
         fetch('http://localhost:8080/worlds')
             .then(response => {
@@ -103,16 +97,16 @@
             .catch(error => {
                 console.error('Fetching error:', error);
             });
-
+    
         var abtns = document.getElementsByClassName("arrowButton");
-  
         var errorModal = document.getElementById("SWError");
         var successModal = document.getElementById("Success");
+        var successCap = document.getElementById("successCap");
         var closeButtons = document.getElementsByClassName("close");
+        var loader = document.querySelector(".loader");
         var okButton = document.querySelector(".dismiss_OK");
-        var confirmButton = document.getElementsByClassName
-
-
+        var confirmButton = document.querySelector(".confirm");
+    
         for (var i = 0; i < abtns.length; i++) {
             abtns[i].addEventListener("click", function() {
                 var activeButtons = document.getElementsByClassName("active");
@@ -121,30 +115,42 @@
                 } else {
                     var world = activeButtons[0].innerHTML;
                     successModal.style.display = "block";
+                    successCap.innerText = `Please confirm that you want to start ${world} by hitting the confirm button`;
+                    world.bold()
+                    loader.style.display = "none";
+                    confirmButton.style.display = "inline";
                 }
             });
         }
-
+    
         Array.from(closeButtons).forEach(button => {
-        button.onclick = function() {
-            this.parentElement.parentElement.style.display = "none";
-        }
+            button.onclick = function() {
+                playSound();
+                this.parentElement.parentElement.style.display = "none";
+            }
         });
-
+    
         okButton.onclick = function() {
-        errorModal.style.display = "none";
-        }
-
-        window.onclick = function(event) {
-        if (event.target == errorModal) {
+            playSound();
             errorModal.style.display = "none";
         }
-        if (event.target == successModal) {
-            successModal.style.display = "none";
+    
+        confirmButton.onclick = function () {
+            playSound();
+            loader.style.display = "block";
+            confirmButton.style.display = "none";
         }
+    
+        window.onclick = function(event) {
+            if (event.target == errorModal) {
+                playSound();
+                errorModal.style.display = "none";
+            }
+            if (event.target == successModal) {
+                playSound();
+                successModal.style.display = "none";
+            }
         }
-
     </script>
-
 </body>
 </html>
