@@ -6,7 +6,7 @@
     <title>My Minecraft Server hub</title>
     <link rel="stylesheet" href="styles.css">
 </head>
-<body>
+<body onload="startGame()">
     <h1>Welcome to my minecraft server hub</h1>
     <div class="mycontainer">
         <div class="active_servers">
@@ -56,6 +56,7 @@
           <div class="loader"></div>
           <button class="confirm" onclick="playSound()">confirm</button>
         </div>
+
       
       </div>
       <script>
@@ -151,6 +152,186 @@
                 successModal.style.display = "none";
             }
         }
+
+
+
+    
+// Array to store multiple game pieces
+var myGamePieces = [];
+var rowCount = 0; // Variable to track the number of rows
+var falling = false; // Flag to indicate if the blocks are currently falling
+var disappearing = false; // Flag to indicate if blocks are disappearing
+var rowCreationInterval = 800; // Interval between creating rows (in milliseconds)
+
+function startGame() {
+    // Initialize the game area (canvas)
+    myGameArea.start();
+    
+    // Start creating rows
+    createRows();
+    
+    // Set an interval to update the game area continuously, creating the falling effect
+    myGameArea.interval = setInterval(updateGameArea, 10); // 10 milliseconds per update for smooth animation
+}
+
+// Function to create 5 rows of blocks
+function createRows() {
+    if (rowCount < 5) {
+        createNextRow();
+        rowCount++;
+        setTimeout(createRows, rowCreationInterval); // Staggered row creation with a delay
+    } else {
+        if (!falling && !disappearing) {
+            falling = true;
+            // Wait until all rows have been created and settled before starting disappearance
+            checkRowsSettled(() => {
+                makeBlocksDisappear();
+                setTimeout(resetGame, 1000); // Shortened pause before resetting the game (adjust time as needed)
+            });
+        }
+    }
+}
+
+// Function to create the next row of blocks
+function createNextRow() {
+    createRow("images/Lime_Concrete.webp", rowCount * 30); // Create a row with the yPosition based on rowCount
+}
+
+// Function to create a row of 5 blocks
+function createRow(blockType, yPosition) {
+    for (let i = 0; i < 5; i++) {
+        let xPosition = i * 30; // Position each block next to the previous one
+        let delay = i * 100; // Delay each block's fall by 100 milliseconds
+
+        setTimeout(function() {
+            let newBlock = new component(30, 30, blockType, xPosition, yPosition, "image");
+            myGamePieces.push(newBlock);
+        }, delay);
+    }
+}
+
+// Function to check if all blocks have settled
+function checkRowsSettled(callback) {
+    let intervalCheck = setInterval(function() {
+        let allSettled = myGamePieces.every(block => block.gravitySpeed === 0);
+        if (allSettled) {
+            clearInterval(intervalCheck); // Stop checking if all blocks have settled
+            callback(); // Execute the callback to make blocks disappear
+        }
+    }, 100); // Check every 100 milliseconds
+}
+
+// Function to make all blocks disappear
+function makeBlocksDisappear() {
+    disappearing = true; // Set flag to start disappearing
+}
+
+// Function to reset the game
+function resetGame() {
+    myGamePieces = []; // Clear the existing blocks
+    rowCount = 0; // Reset row count
+    falling = false; // Reset falling flag
+    disappearing = false; // Reset disappearing flag
+    createRows(); // Start creating rows again
+}
+
+var myGameArea = {
+    canvas : document.createElement("canvas"), // Create a canvas element
+    start : function() {
+        // Set the dimensions of the canvas
+        this.canvas.width = 150;
+        this.canvas.height = 280;
+        
+        // Get the drawing context for the canvas
+        this.context = this.canvas.getContext("2d");
+        
+        // Insert the canvas into the "loader" div instead of directly into the body
+        document.querySelector(".loader").appendChild(this.canvas);
+    },
+    clear : function() {
+        // Clear the canvas, wiping away the previous frame
+        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    }
+}
+
+// Define a component function to create a game piece
+function component(width, height, image, x, y, type) {
+    this.type = type; // The type of the component (in this case, an image)
+    this.width = width; // Width of the block
+    this.height = height; // Height of the block
+    this.image = new Image(); // Create a new image object
+    this.image.src = image; // Set the source of the image to the provided file
+    this.x = x; // Initial x position of the block
+    this.y = y; // Initial y position of the block
+    this.gravity = 0.05; // Gravity value to make the block fall
+    this.gravitySpeed = 0; // Initial speed due to gravity (starts at 0)
+    this.disappearing = false; // Flag to indicate if the block is disappearing
+    
+    // Function to draw the image on the canvas
+    this.update = function() {
+        let ctx = myGameArea.context; // Get the context to draw on the canvas
+        if (!this.disappearing) {
+            ctx.drawImage(this.image, this.x, this.y, this.width, this.height); // Draw the image at the specified position
+        }
+    }
+    
+    // Function to update the block's position, applying gravity or disappearance
+    this.newPos = function() {
+        if (!this.disappearing) {
+            this.gravitySpeed += this.gravity; // Increase the speed by the gravity value
+            this.y += this.gravitySpeed; // Move the block down by the current speed
+            this.hitBottom(); // Check if the block has hit the bottom of the canvas or another block
+        } else {
+            this.y += 10; // Make the block move down to disappear (adjust speed if needed)
+            if (this.y > myGameArea.canvas.height) {
+                // Remove block if it has fallen past the bottom of the canvas
+                let index = myGamePieces.indexOf(this);
+                if (index > -1) {
+                    myGamePieces.splice(index, 1);
+                }
+            }
+        }
+    }
+    
+    // Function to stop the block when it hits the bottom or another block
+    this.hitBottom = function() {
+        if (!disappearing) { // Only check for collisions if not disappearing
+            var rockbottom = myGameArea.canvas.height - this.height; // Calculate the bottom position where the block should stop
+
+            // Check for collision with other blocks
+            for (let i = 0; i < myGamePieces.length; i++) {
+                let otherBlock = myGamePieces[i];
+                if (otherBlock !== this && 
+                    this.x < otherBlock.x + otherBlock.width && 
+                    this.x + this.width > otherBlock.x &&
+                    this.y + this.height > otherBlock.y && 
+                    this.y < otherBlock.y + otherBlock.height) {
+                    
+                    rockbottom = otherBlock.y - this.height; // Stop the block above the other block
+                    break;
+                }
+            }
+
+            if (this.y > rockbottom) { // If the block has moved below the bottom or hit another block
+                this.y = rockbottom; // Set the block's position to the bottom or top of the other block
+                this.gravitySpeed = 0; // Stop the block from falling further
+            }
+        }
+    }
+}
+
+// Function to continuously update the game area, creating the falling effect
+function updateGameArea() {
+    myGameArea.clear(); // Clear the previous frame
+    
+    // Update and draw each block
+    for (let i = 0; i < myGamePieces.length; i++) {
+        myGamePieces[i].newPos(); // Update the block's position (applying gravity or disappearance)
+        myGamePieces[i].update(); // Draw the block at its new position
+    }
+}
+    
+        
     </script>
 </body>
 </html>
