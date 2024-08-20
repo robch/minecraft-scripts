@@ -20,6 +20,15 @@ mc_check_dependencies() {
   fi
 }
 
+# get the service "slot" or the default
+mc_get_slot_or_default() {
+  if [ -z "$1" ]; then
+    echo 1
+  else
+    echo $1
+  fi
+}
+
 # get the user name for the Minecraft server
 mc_get_user_name() {
   whoami
@@ -227,7 +236,7 @@ mc_download_and_install_openjdk() {
 # param1: the world name, if not set, use the default
 # param2: the paper version to use, if not set, use the default
 # param3: the paper build to use, if not set, use the default
-mc_download_paper_jar() {
+mc_download_paper_server_jar() {
   WORLD=$(mc_get_world_basename_or_default $1)
   JAR_FQ_FILE=$(mc_get_world_paper_server_jar_fq_filename $WORLD)
   JAR_URL=$(mc_get_paper_jar_url $2 $3)

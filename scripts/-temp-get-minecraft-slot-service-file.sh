@@ -3,23 +3,33 @@
 # This script will return the contents of the "minecraft.service" file for
 # the specified slot.
 #
-# USAGE:    bash -get-minecraft-slot-service-file.sh [slot]
-# EXAMPLE:  bash -get-minecraft-slot-service-file.sh 1
+# USAGE:    bash -get-minecraft-slot-service-file.sh [world] [slot]
+# EXAMPLE:  bash -get-minecraft-slot-service-file.sh World1 1
 # PRE-REQS: none
 #
 
-DEFAULT_MC_SLOT=1
-THIS_DIR=$(dirname $0)
-MC_USER=$($THIS_DIR/-get-mc-user-name.sh)
-WORLD_FQ_PATH=$($THIS_DIR/-get-minecraft-world-fq-dir.sh $1)
+source $(dirname $0)/-functions.sh
 
+WORLD=$(mc_get_world_basename_or_default $1)
+WORLD_FQ_DIR=$(mc_get_world_fq_dir $WORLD)
+SERVER_SLOT=$(mc_get_slot_or_default $2)
+JAR_FQ_FILE=$(mc_get_world_paper_server_jar_fq_filename $WORLD)
+JAVA_DIR=$(dirname $(which java))
 
-# if parameter is not set, set it to the default
-if [ -z "$1" ]; then
-  export SERVER_SLOT=$DEFAULT_MC_SLOT
-else
-  export SERVER_SLOT=$1
+# if the world directory doesn't exist, error out
+if [ ! -d $WORLD_FQ_DIR ]; then
+  echo -e "\e[31mERROR: The world directory does not exist for $WORLD.\e[0m"
+  exit 1
 fi
+
+# if the world isn't "registered" via mc_get_worlds
+WORLDS=$(mc_get_worlds)
+if [ -z "$(echo $WORLDS | grep $WORLD)" ]; then
+  echo -e "\e[31mERROR: The world $WORLD has no description. Please set one.\e[0m"
+  exit 1
+fi
+
+_=$(mc_set_world_description $WORLD)
 
 # output the service file
 cat <<EOF
@@ -30,8 +40,8 @@ Description=minecraft-slot-$SERVER_SLOT.service
 After=network.target
 
 [Service]
-ExecStart=/mnt/c/data/java21/jdk-21.0.3+9/bin/java -Dlog4j2.formatMsgNoLookups=true -Xms4G -Xmx4G -jar /mnt/c/data/mc/1/paper-1.21-46.jar
-WorkingDirectory=$WORLD_FQ_PATH
+ExecStart=$JAVA_DIR -Xms4G -Xmx4G -jar $JAR_FQ_FILE
+WorkingDirectory=$WORLD_FQ_DIR
 Restart=always
 RestartSec=10
 User=mcuser$MC_USER
