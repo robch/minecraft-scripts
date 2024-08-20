@@ -40,7 +40,7 @@ Description=minecraft-slot-$SERVER_SLOT.service
 After=network.target
 
 [Service]
-ExecStart=$JAVA_DIR -Xms4G -Xmx4G -jar $JAR_FQ_FILE
+gExecStart=$JAVA_DIR/java -Xms4G -Xmx4G -jar $JAR_FQ_FILE
 WorkingDirectory=$WORLD_FQ_DIR
 Restart=always
 RestartSec=10
