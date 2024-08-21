@@ -31,7 +31,8 @@ mc_get_slot_or_default() {
 
 # get the user name for the Minecraft server
 mc_get_user_name() {
-  whoami
+  # whoami
+  echo "root"
 }
 
 # get the base mc directory
@@ -300,51 +301,37 @@ mc_accept_eula() {
 # param1: the world name, if not set, use the default
 # param2: the slot number, if not set, use the default
 mc_get_world_service_file_content() {
-  MC_USER=$(mc_get_user_name)
   WORLD=$(mc_get_world_basename_or_default $1)
-  WORLD_FQ_DIR=$(mc_get_world_fq_dir $WORLD)
   SERVER_SLOT=$(mc_get_slot_or_default $2)
-  JAR_FQ_FILE=$(mc_get_world_paper_server_jar_fq_filename $WORLD)
+
   JAVA_DIR=$(dirname $(which java))
-
-  # if the world directory doesn't exist, error out
-  if [ ! -d $WORLD_FQ_DIR ]; then
-    echo -e "\e[31mERROR: The world directory does not exist for $WORLD.\e[0m"
-    exit 1
-  fi
-
-  # if the world isn't "registered" via mc_get_worlds
-  WORLDS=$(mc_get_worlds)
-  if [ -z "$(echo $WORLDS | grep $WORLD)" ]; then
-    echo -e "\e[31mERROR: The world $WORLD has no description. Please set one.\e[0m"
-    exit 1
-  fi
+  JAR_FQ_FILE=$(mc_get_world_paper_server_jar_fq_filename $WORLD)
+  WORLD_FQ_DIR=$(mc_get_world_fq_dir $WORLD)
+  MC_USER=$(mc_get_user_name)
 
   _=$(mc_set_world_description $WORLD)
 
   # output the service file
-  cat <<EOF
-# minecraft.service
-
-[Unit]
-Description=minecraft-slot-$SERVER_SLOT.service
-After=network.target
-
-[Service]
-gExecStart=$JAVA_DIR/java -Xms4G -Xmx4G -jar $JAR_FQ_FILE
-WorkingDirectory=$WORLD_FQ_DIR
-Restart=always
-RestartSec=10
-User=$MC_USER
-
-[Install]
-WantedBy=multi-user.target
-EOF
+  echo "# minecraft.service"
+  echo ""
+  echo "[Unit]"
+  echo "Description=minecraft-slot-$SERVER_SLOT.service"
+  echo "After=network.target"
+  echo ""
+  echo "[Service]"
+  echo "ExecStart=$JAVA_DIR/java -Xms4G -Xmx4G -jar $JAR_FQ_FILE"
+  echo "WorkingDirectory=$WORLD_FQ_DIR"
+  echo "Restart=always"
+  echo "RestartSec=10"
+  echo "User=$MC_USER"
+  echo ""
+  echo "[Install]"
+  echo "WantedBy=multi-user.target"
 }
 
 # get the service file name for the specified slot
 # param1: the slot number, if not set, use the default
-mc_get_world_service_file_name() {
+mc_get_service_base_file_name() {
   echo "minecraft-slot-$(mc_get_slot_or_default $1).service"
 }
 
@@ -352,17 +339,19 @@ mc_get_world_service_file_name() {
 # param1: the world name, if not set, use the default
 # param2: the slot number, if not set, use the default
 mc_create_world_service_file() {
-  # get the service file content and put it in a temp file
+  TEMP_FILE_NAME=temp-file.service
+
+  # create a temp version of the service file
   SERVICE_FILE_CONTENT=$(mc_get_world_service_file_content $1 $2)
-  echo "$SERVICE_FILE_CONTENT" > temp-file.service
+  echo "$SERVICE_FILE_CONTENT" > $TEMP_FILE_NAME
 
   # copy the temp file to the service file
   SERVER_SLOT=$(mc_get_slot_or_default $2)
-  SERVICE_FILE_NAME=$(mc_get_world_service_file_name $2)
-  sudo cp temp-file.service /etc/systemd/system/$SERVICE_FILE_NAME
+  SERVICE_FILE_NAME=$(mc_get_service_base_file_name $2)
+  sudo cp $TEMP_FILE_NAME /etc/systemd/system/$SERVICE_FILE_NAME
+  rm $TEMP_FILE_NAME
 
-  ls -l /etc/systemd/system/$SERVICE_FILE_NAME
-  cat /etc/systemd/system/$SERVICE_FILE_NAME
+  echo /etc/systemd/system/$SERVICE_FILE_NAME
 }
 
 # quick test of some of the core functions
