@@ -8,4 +8,4 @@
 #
 
 source $(dirname $0)/-functions.sh
-mc_get_worlds_json
+mc_get_world_description "$1"

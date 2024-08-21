@@ -7,12 +7,5 @@
 # PRE-REQS: none
 #
 
-THIS_DIR=$(dirname $0)
-WORLDS_FQ_DIR=$($THIS_DIR/-get-minecraft-worlds-fq-dir.sh $1)
-
-WORLDS=$(find $WORLDS_FQ_DIR -type f -name "world-name.txt")
-if [ ! -z "$WORLDS" ]; then
-  for WORLD in $WORLDS; do
-    echo "$(basename $(dirname $WORLD))"
-  done
-fi
+source $(dirname $0)/-functions.sh
+mc_get_worlds
