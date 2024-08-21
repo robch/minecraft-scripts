@@ -10,6 +10,7 @@
 
 source $(dirname $0)/-functions.sh
 
+MC_USER=$(mc_get_user_name)
 WORLD=$(mc_get_world_basename_or_default $1)
 WORLD_FQ_DIR=$(mc_get_world_fq_dir $WORLD)
 SERVER_SLOT=$(mc_get_slot_or_default $2)
@@ -44,7 +45,7 @@ gExecStart=$JAVA_DIR/java -Xms4G -Xmx4G -jar $JAR_FQ_FILE
 WorkingDirectory=$WORLD_FQ_DIR
 Restart=always
 RestartSec=10
-User=mcuser$MC_USER
+User=$MC_USER
 
 [Install]
 WantedBy=multi-user.target
