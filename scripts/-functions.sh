@@ -296,6 +296,75 @@ mc_accept_eula() {
   fi
 }
 
+# get the service file content for the specified world and slot
+# param1: the world name, if not set, use the default
+# param2: the slot number, if not set, use the default
+mc_get_world_service_file_content() {
+  MC_USER=$(mc_get_user_name)
+  WORLD=$(mc_get_world_basename_or_default $1)
+  WORLD_FQ_DIR=$(mc_get_world_fq_dir $WORLD)
+  SERVER_SLOT=$(mc_get_slot_or_default $2)
+  JAR_FQ_FILE=$(mc_get_world_paper_server_jar_fq_filename $WORLD)
+  JAVA_DIR=$(dirname $(which java))
+
+  # if the world directory doesn't exist, error out
+  if [ ! -d $WORLD_FQ_DIR ]; then
+    echo -e "\e[31mERROR: The world directory does not exist for $WORLD.\e[0m"
+    exit 1
+  fi
+
+  # if the world isn't "registered" via mc_get_worlds
+  WORLDS=$(mc_get_worlds)
+  if [ -z "$(echo $WORLDS | grep $WORLD)" ]; then
+    echo -e "\e[31mERROR: The world $WORLD has no description. Please set one.\e[0m"
+    exit 1
+  fi
+
+  _=$(mc_set_world_description $WORLD)
+
+  # output the service file
+  cat <<EOF
+# minecraft.service
+
+[Unit]
+Description=minecraft-slot-$SERVER_SLOT.service
+After=network.target
+
+[Service]
+gExecStart=$JAVA_DIR/java -Xms4G -Xmx4G -jar $JAR_FQ_FILE
+WorkingDirectory=$WORLD_FQ_DIR
+Restart=always
+RestartSec=10
+User=$MC_USER
+
+[Install]
+WantedBy=multi-user.target
+EOF
+}
+
+# get the service file name for the specified slot
+# param1: the slot number, if not set, use the default
+mc_get_world_service_file_name() {
+  echo "minecraft-slot-$(mc_get_slot_or_default $1).service"
+}
+
+# create the service file for the specified world and slot
+# param1: the world name, if not set, use the default
+# param2: the slot number, if not set, use the default
+mc_create_world_service_file() {
+  # get the service file content and put it in a temp file
+  SERVICE_FILE_CONTENT=$(mc_get_world_service_file_content $1 $2)
+  echo "$SERVICE_FILE_CONTENT" > temp-file.service
+
+  # copy the temp file to the service file
+  SERVER_SLOT=$(mc_get_slot_or_default $2)
+  SERVICE_FILE_NAME=$(mc_get_world_service_file_name $2)
+  sudo cp temp-file.service /etc/systemd/system/$SERVICE_FILE_NAME
+
+  ls -l /etc/systemd/system/$SERVICE_FILE_NAME
+  cat /etc/systemd/system/$SERVICE_FILE_NAME
+}
+
 # quick test of some of the core functions
 mc_test1() {
   DO_VERSION_STUFF=false
