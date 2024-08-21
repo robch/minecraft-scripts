@@ -39,9 +39,7 @@ class Program
         context.Response.AddHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
         context.Response.AddHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With");
 
-
         Console.WriteLine($"Recived {method} request for {path}");
-
 
         context.Response.ContentType = "application/json";
         if (method == "GET" && path == "/")
@@ -50,7 +48,6 @@ class Program
             byte[] buffer = System.Text.Encoding.UTF8.GetBytes(response);
             context.Response.ContentLength64 = buffer.Length;
             context.Response.OutputStream.Write(buffer, 0, buffer.Length);
-
         }
         else if (method == "GET" && path == "/home.html")
         {
@@ -79,63 +76,8 @@ class Program
         }
         else if (method == "GET" && path == "/worlds")
         {
-            var worldList = new List<World>
-            {
-                new World
-                {
-                    Name = "world 1",
-                    Directory = "/mnt/c/",
-                    Version = "1.21"
-                },
-                new World
-                {
-                    Name = "world 2",
-                    Directory = "/mnt/c/",
-                    Version = "1.20.3"
-                },
-                new World
-                {
-                    Name = "world 3",
-                    Directory = "/mnt/c/",
-                    Version = "1.18.3"
-                },
-                new World
-                {
-                    Name = "world 4",
-                    Directory = "/mnt/c/",
-                    Version = "1.6"
-                },
-                new World
-                {
-                    Name = "world 5",
-                    Directory = "/mnt/c/",
-                    Version = "1.10000"
-                },
-                new World
-                {
-                    Name = "world 6",
-                    Directory = "/mnt/c/",
-                    Version = "1.22"
-                },
-                new World
-                {
-                    Name = "world 7",
-                    Directory = "/mnt/c/",
-                    Version = "1"
-                },
-                new World
-                {
-                    Name = "world 8",
-                    Directory = "/mnt/c/",
-                    Version = "1"
-                }
-            };
-/*            string json = System.Text.Json.JsonSerializer.Serialize(worldList);
-            Console.WriteLine(json);*/
+
             string json = ListWorlds();
-            /*            string json2 = System.Text.Json.JsonSerializer.Serialize<List<World>>(ListWorlds());*/
-
-
 
             byte[] buffer = System.Text.Encoding.UTF8.GetBytes(json);
             context.Response.ContentLength64 = buffer.Length;
@@ -159,48 +101,28 @@ class Program
         context.Response.OutputStream.Write(buffer, 0, buffer.Length);
     }
     private static string ListWorlds()
-
     {
-
         var process = new Process
-
         {
-
             StartInfo = new ProcessStartInfo
-
             {
-
                 FileName = "wsl.exe",
-
                 Arguments = "-e /mnt/c/src/minecraft-scripts/scripts/06-get-worlds-json.sh",
-
                 RedirectStandardOutput = true,
-
                 RedirectStandardError = true,
-
                 UseShellExecute = false,
-
                 CreateNoWindow = true,
-
             }
-
         };
-        process.Start();
-        
-        string output = process.StandardOutput.ReadToEnd();
 
+        process.Start();
+        string output = process.StandardOutput.ReadToEnd();
         string errors = process.StandardError.ReadToEnd();
 
-
-
         process.WaitForExit();
-
         if (!string.IsNullOrEmpty(errors))
-
         {
-
             Console.WriteLine("ERROR: " + errors);
-
         }
         else
         {
