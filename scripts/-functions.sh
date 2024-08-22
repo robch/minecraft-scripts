@@ -136,9 +136,9 @@ mc_get_worlds_json() {
         echo ","
       fi
       echo "  {"
-      echo "    \"name\": \"$WORLD\","
-      echo "    \"description\": \"$DESCRIPTION\"",
-      echo "    \"directory\": \"$(mc_get_world_fq_dir $WORLD)\""
+      echo "    \"Name\": \"$WORLD\","
+      echo "    \"Description\": \"$DESCRIPTION\"",
+      echo "    \"Directory\": \"$(mc_get_world_fq_dir $WORLD)\""
       echo "  }"
     done
     echo "]"

@@ -1,28 +1,25 @@
 ﻿using System.Diagnostics;
 using System.Net;
-using System.Xml;
-using System.Diagnostics;
-
+using System.Text;
 
 class Program
 {
-    public static object JsonConvert { get; private set; }
     public class World
     {
         public string Name { get; set; }
+        public string Description { get; set; }
         public string Directory { get; set; }
         public string Version { get; set; }
     }
+
     static void Main()
     {
-        // Set up the HttpListener to listen for incoming requests
         HttpListener listener = new HttpListener();
-        listener.Prefixes.Add("http://localhost:8080/"); // Listen on localhost port 8080
+        listener.Prefixes.Add("http://localhost:8080/");
         listener.Start();
 
         Console.WriteLine("Server started. Listening for requests...");
 
-        // Handle incoming requests
         while (true)
         {
             HttpListenerContext context = listener.GetContext();
@@ -32,22 +29,50 @@ class Program
 
     static void HandleRequest(HttpListenerContext context)
     {
-        // Get the request method and URL path
         string method = context.Request.HttpMethod;
         string path = context.Request.Url.AbsolutePath;
         context.Response.AddHeader("Access-Control-Allow-Origin", "*");
         context.Response.AddHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-        context.Response.AddHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With");
+        context.Response.AddHeader("Access-Control-Allow-Headers", "Content-Type");
 
-        Console.WriteLine($"Recived {method} request for {path}");
+
+        Console.WriteLine($"Received {method} request for {path}");
 
         context.Response.ContentType = "application/json";
-        if (method == "GET" && path == "/")
+
+        // Handle OPTIONS request
+        if (method == "OPTIONS")
         {
-            string response = "hello world";
-            byte[] buffer = System.Text.Encoding.UTF8.GetBytes(response);
+            context.Response.StatusCode = (int)HttpStatusCode.OK;
+            context.Response.OutputStream.Close();
+        }
+        else if (method == "GET" && path == "/")
+        {
+            string response = "Hello, world!";
+            byte[] buffer = Encoding.UTF8.GetBytes(response);
             context.Response.ContentLength64 = buffer.Length;
             context.Response.OutputStream.Write(buffer, 0, buffer.Length);
+        }
+        else if (method == "POST" && path == "/create-world")
+        {
+            // Handle POST request to create a new world
+            using (var reader = new StreamReader(context.Request.InputStream, context.Request.ContentEncoding))
+            {
+                string jsonData = reader.ReadToEnd();
+                Console.WriteLine($"Json: {jsonData}");
+                var worldData = System.Text.Json.JsonSerializer.Deserialize<World>(jsonData);
+                string worldName = worldData.Name;
+                string worldDescription = worldData.Description;
+
+                // Execute the shell command to create the world
+                CreateWorld(worldName, worldDescription);
+
+                context.Response.StatusCode = (int)HttpStatusCode.OK;
+                string response = $"World '{worldName}' is being created!";
+                byte[] buffer = Encoding.UTF8.GetBytes(response);
+                context.Response.ContentLength64 = buffer.Length;
+                context.Response.OutputStream.Write(buffer, 0, buffer.Length);
+            }
         }
         else if (method == "GET" && path == "/home.html")
         {
@@ -60,7 +85,6 @@ class Program
             string filename = "C:\\src\\minecraft-scripts\\MinecraftHub\\styles.css";
             context.Response.ContentType = "text/css";
             RespondWithFile(context, filename);
-
         }
         else if (method == "GET" && path == "/fonts/Minecraft.ttf")
         {
@@ -76,30 +100,27 @@ class Program
         }
         else if (method == "GET" && path == "/worlds")
         {
-
             string json = ListWorlds();
-
-            byte[] buffer = System.Text.Encoding.UTF8.GetBytes(json);
+            byte[] buffer = Encoding.UTF8.GetBytes(json);
             context.Response.ContentLength64 = buffer.Length;
             context.Response.OutputStream.Write(buffer, 0, buffer.Length);
         }
         else
         {
-            // Handle other requests with a 404 Not Found response
             context.Response.StatusCode = (int)HttpStatusCode.NotFound;
         }
 
-        //close the response
         context.Response.OutputStream.Close();
     }
 
     private static void RespondWithFile(HttpListenerContext context, string filename)
     {
         string response = File.ReadAllText(filename);
-        byte[] buffer = System.Text.Encoding.UTF8.GetBytes(response);
+        byte[] buffer = Encoding.UTF8.GetBytes(response);
         context.Response.ContentLength64 = buffer.Length;
         context.Response.OutputStream.Write(buffer, 0, buffer.Length);
     }
+
     private static string ListWorlds()
     {
         var process = new Process
@@ -130,8 +151,37 @@ class Program
         }
         return output;
     }
+
+    private static void CreateWorld(string worldName, string worldDescription)
+    {
+        Console.WriteLine($"world_name: {worldName}");
+        Console.WriteLine($"world_description: {worldDescription}");
+        var process = new Process
+        {
+            StartInfo = new ProcessStartInfo
+            {
+                FileName = "wsl.exe",
+                Arguments = $"-e /mnt/c/src/minecraft-scripts/scripts/11-create-minecraft-world.sh {worldName} \"{worldDescription}\"",
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            }
+        };
+
+        process.Start();
+        string output = process.StandardOutput.ReadToEnd();
+        string error = process.StandardError.ReadToEnd();
+        process.WaitForExit();
+
+        if (!string.IsNullOrEmpty(error))
+        {
+            Console.WriteLine("Error while creating world: " + error);
+            Console.WriteLine(output);
+        }
+        else
+        {
+            Console.WriteLine("World created successfully: " + output);
+        }
+    }
 }
-
-
- 
-

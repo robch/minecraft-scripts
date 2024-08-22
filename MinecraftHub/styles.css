@@ -123,7 +123,7 @@ div.mycontainer div {
   padding: 20px;
   border-radius: 10px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-
+  width: 50%;
 }
 
 /* The Modal (background) */
@@ -214,4 +214,15 @@ button.confirm {
   padding: 10px;
   color: #ffffff;
   font-size: 15px;
+}
+
+#createNW {
+  background-color:cadetblue;
+  padding: 10px;
+  size: 150%;
+}
+
+#myForm {
+  display: none; /* Initially hide the form */
+  padding: 10px;
 }
