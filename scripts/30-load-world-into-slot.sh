@@ -8,9 +8,9 @@
 
 source $(dirname $0)/-functions.sh
 
-WORLD=$(mc_get_world_basename_or_default $1)
-SLOT=$(mc_get_slot_or_default $2)
-SERVICE_NAME=$(mc_get_service_base_file_name $SLOT)
+WORLD=$(mc_world_name_get_or_default $1)
+SLOT=$(mc_service_slot_get_or_default $2)
+SERVICE_NAME=$(mc_service_slot_name_get $SLOT)
 
 # stop the previous service
 echo "Stopping previous service $SERVICE_NAME ..."
@@ -21,7 +21,7 @@ echo
 # create the service file
 echo "Updating service for world: $WORLD, slot: $SLOT ..."
 
-SERVICE_FILE=$(mc_create_world_service_file $WORLD $SLOT)
+SERVICE_FILE=$(mc_world_service_slot_file_create $WORLD $SLOT)
 SERVICE_NAME=$(basename $SERVICE_FILE)
 
 echo "Updating service for world: $WORLD, slot: $SLOT ... Done!"

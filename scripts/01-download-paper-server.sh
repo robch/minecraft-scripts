@@ -7,4 +7,4 @@
 # PRE-REQS: none
 
 source $(dirname $0)/-functions.sh
-mc_download_paper_server_jar "$1" "$2" "$3"
+mc_paper_java_jar_download "$1" "$2" "$3"

@@ -12,9 +12,9 @@
 source $(dirname $0)/-functions.sh
 
 THIS_DIR=$(dirname $0)
-WORLD=$(mc_get_world_basename_or_default $1)
-WORLD_FQ_DIR=$(mc_get_world_fq_dir $WORLD)
-JAR_FQ_FILE=$(mc_get_world_paper_server_jar_fq_filename $WORLD)
+WORLD=$(mc_world_name_get_or_default $1)
+WORLD_FQ_DIR=$(mc_world_fq_dir_get_or_default $WORLD)
+JAR_FQ_FILE=$(mc_world_java_jar_fq_filename_get_or_default $WORLD)
 
 # ensure the jar file exists
 if [ ! -f $JAR_FQ_FILE ]; then

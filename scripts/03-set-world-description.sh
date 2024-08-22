@@ -8,4 +8,4 @@
 #
 
 source $(dirname $0)/-functions.sh
-mc_set_world_description "$1" "$2"
+mc_world_description_set "$1" "$2"

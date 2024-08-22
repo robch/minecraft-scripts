@@ -8,4 +8,4 @@
 #
 
 source $(dirname $0)/-functions.sh
-mc_accept_eula "$1"
+mc_world_eula_accept "$1"
