@@ -161,7 +161,7 @@ class Program
             StartInfo = new ProcessStartInfo
             {
                 FileName = "wsl.exe",
-                Arguments = $"-e /mnt/c/src/minecraft-scripts/scripts/11-create-minecraft-world.sh {worldName} \"{worldDescription}\"",
+                Arguments = $"-e /mnt/c/src/minecraft-scripts/scripts/80-create-minecraft-world.sh {worldName} \"{worldDescription}\"",
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
