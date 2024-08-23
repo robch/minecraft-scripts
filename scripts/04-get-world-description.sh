@@ -8,4 +8,4 @@
 #
 
 source $(dirname $0)/-functions.sh
-mc_get_world_description "$1"
+mc_world_description_get_or_default "$1"

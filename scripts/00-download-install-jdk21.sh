@@ -4,4 +4,4 @@
 #
 
 source $(dirname $0)/-functions.sh
-mc_download_and_install_openjdk
+mc_global_download_and_install_openjdk_21

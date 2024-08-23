@@ -8,8 +8,8 @@
 
 source $(dirname $0)/-functions.sh
 
-SLOT=$(mc_get_slot_or_default $1)
-SERVICE_NAME=$(mc_get_service_base_file_name $SLOT)
+SLOT=$(mc_service_slot_get_or_default $1)
+SERVICE_NAME=$(mc_service_slot_name_get $SLOT)
 
 # stop the service
 echo "Stopping service: $SERVICE_NAME ..."

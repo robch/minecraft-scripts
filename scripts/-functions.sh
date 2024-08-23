@@ -1,42 +1,38 @@
 #!/bin/bash
 
-# This script will return the user name for the Minecraft server.
-#
-# USAGE:    bash -get-mc-user-name.sh
-# EXAMPLE:  bash -get-mc-user-name.sh
-# PRE-REQS: none
-#
-
 # defaults used across all scripts
 MC_DEFAULT_WORLD=World1
 MC_FQ_DIR_ON_WSL=/mnt/c/data/mc
 MC_FQ_DIR_ON_LINUX=/data/
 
-# ensure dependencies are installed
-mc_check_dependencies() {
+# Function: mc_global_dependencies_check
+# Description: Check to make sure all dependencies are installed
+# Parameters: None
+#
+mc_global_dependencies_check() {
   if [ ! -x "$(command -v jq)" ]; then
     echo "jq is not installed. Please install it."
     exit 1
   fi
+  echo "All dependencies are installed."
 }
 
-# get the service "slot" or the default
-mc_get_slot_or_default() {
-  if [ -z "$1" ]; then
-    echo 1
-  else
-    echo $1
+# Function: mc_global_ensure_dir_exists
+# Description: Ensure a directory exists
+# Parameters:
+# - $1: the directory to check
+#
+mc_global_ensure_dir_exists() {
+  if [ ! -d $1 ]; then
+    mkdir -p $1
   fi
 }
 
-# get the user name for the Minecraft server
-mc_get_user_name() {
-  # whoami
-  echo "root"
-}
-
-# get the base mc directory
-mc_get_fq_dir() {
+# Function: mc_global_fq_dir_get
+# Description: Get the base Minecraft directory
+# Parameters: None
+#
+mc_global_fq_dir_get() {
   if [ -d /mnt/c/users ]; then
     echo $MC_FQ_DIR_ON_WSL
   else
@@ -44,14 +40,45 @@ mc_get_fq_dir() {
   fi
 }
 
-# get the base mc worlds directory
-mc_get_worlds_fq_dir() {
-  echo "$(mc_get_fq_dir)/worlds"
+# Function: mc_global_user_name_get
+# Description: Get the user name for the Minecraft server
+# Parameters: None
+#
+mc_global_user_name_get() {
+  # whoami
+  echo "root"
 }
 
-# get the world basename for the specified world
-# param1: the world name, if not set, use the default
-mc_get_world_basename_or_default() {
+# Function: mc_worlds_fq_dir_get
+# Description: Get the base Minecraft worlds directory
+# Parameters: None
+#
+mc_worlds_fq_dir_get() {
+  echo "$(mc_global_fq_dir_get)/worlds"
+}
+
+# Function: mc_worlds_get
+# Description: Get the worlds that have names
+# Parameters: None
+#
+mc_worlds_get() {
+  WORLDS_FQ_DIR=$(mc_worlds_fq_dir_get)
+  if [ -d $WORLDS_FQ_DIR ]; then
+    WORLDS=$(find $(mc_worlds_fq_dir_get) -type f -name "world-description.txt")
+    if [ ! -z "$WORLDS" ]; then
+      for WORLD in $WORLDS; do
+        echo "$(basename $(dirname $WORLD))"
+      done
+    fi
+  fi
+}
+
+# Function: mc_world_name_get_or_default
+# Description: Get the world basename for the specified world
+# Parameters:
+# - $1: the world name, if not set, use the default
+#
+mc_world_name_get_or_default() {
   if [ -z "$1" ]; then
     echo $MC_DEFAULT_WORLD
   else
@@ -59,36 +86,51 @@ mc_get_world_basename_or_default() {
   fi
 }
 
-# get the world directory for the specified world
-# param1: the world name, if not set, use the default
-mc_get_world_fq_dir() {
-  MC_WORLD=$(mc_get_world_basename_or_default $1)
-  echo "$(mc_get_worlds_fq_dir)/$MC_WORLD"
+# Function: mc_world_fq_dir_get_or_default
+# Description: Get the world directory for the specified world
+# Parameters:
+# - $1: the world name, if not set, use the default
+#
+mc_world_fq_dir_get_or_default() {
+  MC_WORLD=$(mc_world_name_get_or_default $1)
+  echo "$(mc_worlds_fq_dir_get)/$MC_WORLD"
 }
 
-# get the the world description fq filename for the specified world
-# param1: the world name, if not set, use the default
-mc_get_world_description_fq_filename() {
-  echo "$(mc_get_world_fq_dir $1)/world-description.txt"
+# Function: mc_world_description_fq_filename_get_or_default
+# Description: Get the world description fq filename for the specified world
+# Parameters:
+# - $1: the world name, if not set, use the default
+#
+mc_world_description_fq_filename_get_or_default() {
+  echo "$(mc_world_fq_dir_get_or_default $1)/world-description.txt"
 }
 
-# get the world description for the specified world
-# param1: the world name, if not set, use the default
-mc_get_world_description() {
-  WORLD=$(mc_get_world_basename_or_default $1)
-  DESCRIPTION_FILE=$(mc_get_world_description_fq_filename $WORLD)
-  if [ ! -f $DESCRIPTION_FILE ]; then
-    echo $WORLD
-  else
+# Function: mc_world_description_get_or_default
+# Description: Get the world description for the specified world
+# Parameters:
+# - $1: the world name, if not set, use the default
+# - $2: the world description, if not set, use the default
+#
+mc_world_description_get_or_default() {
+  DESCRIPTION_FILE=$(mc_world_description_fq_filename_get_or_default $1)
+  if [ -n "$2" ]; then
+    echo $2
+  elif [ -f $DESCRIPTION_FILE ]; then
     cat $DESCRIPTION_FILE
+  else
+    WORLD=$(mc_world_name_get_or_default $1)
+    echo $WORLD
   fi
 }
 
-# set the world description for the specified world
-# param1: if one arguments: the world description
-# param1: if two arguments: the world name
-# param2: if two arguments: the world description
-mc_set_world_description() {
+# Function: mc_world_description_set
+# Description: Set the world description for the specified world
+# Parameters:
+# - $1: if one arguments: the world description
+# - $1: if two arguments: the world name
+# - $2: if two arguments: the world description
+#
+mc_world_description_set() {
 
   # if arg 1 and 2 are both present (use and operator)
   if [ -n "$1" ] && [ -n "$2" ]; then
@@ -98,38 +140,28 @@ mc_set_world_description() {
     WORLD=$MC_DEFAULT_WORLD
     DESCRIPTION=$1
   else
-    WORLD=$(mc_get_world_basename_or_default $1)
+    WORLD=$(mc_world_name_get_or_default $1)
     DESCRIPTION=$WORLD
   fi
 
-  DESCRIPTION_FILE=$(mc_get_world_description_fq_filename $WORLD)
-  mc_ensure_dir_exists $(dirname $DESCRIPTION_FILE)
+  DESCRIPTION_FILE=$(mc_world_description_fq_filename_get_or_default $WORLD)
+  mc_global_ensure_dir_exists $(dirname $DESCRIPTION_FILE)
 
   echo $DESCRIPTION > $DESCRIPTION_FILE
   cat $DESCRIPTION_FILE
 }
 
-# get the worlds that have names
-mc_get_worlds() {
-  WORLDS_FQ_DIR=$(mc_get_worlds_fq_dir)
-  if [ -d $WORLDS_FQ_DIR ]; then
-    WORLDS=$(find $(mc_get_worlds_fq_dir) -type f -name "world-description.txt")
-    if [ ! -z "$WORLDS" ]; then
-      for WORLD in $WORLDS; do
-        echo "$(basename $(dirname $WORLD))"
-      done
-    fi
-  fi
-}
-
-# get the worlds in "json" format
-mc_get_worlds_json() {
-  WORLDS=$(mc_get_worlds)
+# Function: mc_worlds_json_get
+# Description: Get the worlds in "json" format
+# Parameters: None
+#
+mc_worlds_json_get() {
+  WORLDS=$(mc_worlds_get)
   if [ ! -z "$WORLDS" ]; then
     echo "["
     FIRST=true
     for WORLD in $WORLDS; do
-      DESCRIPTION=$(mc_get_world_description $WORLD)
+      DESCRIPTION=$(mc_world_description_get_or_default $WORLD)
       if [ "$FIRST" = true ]; then
         FIRST=false
       else
@@ -138,109 +170,97 @@ mc_get_worlds_json() {
       echo "  {"
       echo "    \"Name\": \"$WORLD\","
       echo "    \"Description\": \"$DESCRIPTION\"",
-      echo "    \"Directory\": \"$(mc_get_world_fq_dir $WORLD)\""
+      echo "    \"Directory\": \"$(mc_world_fq_dir_get_or_default $WORLD)\""
       echo "  }"
     done
     echo "]"
   fi
 }
-# get the world's paper-server.jar fq filename
-# param1: the world name, if not set, use the default
-mc_get_world_paper_server_jar_fq_filename() {
-  echo "$(mc_get_world_fq_dir $1)/paper-server.jar"
+
+# Function: mc_world_java_jar_fq_filename_get_or_default
+# Description: Get the world's paper-server.jar fq filename
+# Parameters:
+# - $1: the world name, if not set, use the default
+#
+mc_world_java_jar_fq_filename_get_or_default() {
+  echo "$(mc_world_fq_dir_get_or_default $1)/paper-server.jar"
 }
 
-# get the latest paper version
-mc_get_latest_paper_version() {
+# Function: mc_paper_version_latest_get
+# Description: Get the latest paper version
+# Parameters: None
+#
+mc_paper_version_latest_get() {
   PAPER_API="https://papermc.io/api/v2/projects/paper"
   PAPER_VERSION=$(curl -s $PAPER_API | jq '.versions | last')
   echo $PAPER_VERSION | tr -d '"'
 }
 
-# get the paper version
-# param1: the version to use, if not set, use the latest
-mc_get_paper_version_or_latest() {
+# Function: mc_paper_version_get_or_default
+# Description: Get the paper version or the latest
+# Parameters:
+# - $1: the version to use, if not set, use the latest
+#
+mc_paper_version_get_or_default() {
   if [ -z "$1" ]; then
-    echo $(mc_get_latest_paper_version)
+    echo $(mc_paper_version_latest_get)
   else
     echo $1
   fi
 }
 
-# get the latest paper build
-# param1: the paper version to use, if not set, use the latest
-mc_get_paper_build_or_latest() {
-  PAPER_VERSION=$(mc_get_paper_version_or_latest $1)
+# Function: mc_paper_version_build_latest_get
+# Description: Get the latest paper build
+# Parameters:
+# - $1: the paper version to use, if not set, use the latest
+
+mc_paper_version_build_latest_get() {
+  PAPER_VERSION=$(mc_paper_version_get_or_default $1)
   PAPER_API="https://papermc.io/api/v2/projects/paper/versions/$PAPER_VERSION/builds"
 
   # get the last build's build number
   curl -s $PAPER_API | jq '.builds | last | .build'
 }
 
-# get the paper build
-# param1: the paper version to use, if not set, use the default
-# param2: the paper build to use, if not set, use the default
-mc_get_paper_build() {
+# Function: mc_paper_version_build_get_or_default
+# Description: Get the paper build
+# Parameters:
+# - $1: the paper version to use, if not set, use the default
+# - $2: the paper build to use, if not set, use the default
+#
+mc_paper_version_build_get_or_default() {
   if [ -z "$2" ]; then
-    PAPER_VERSION=$(mc_get_paper_version_or_latest $1)
-    PAPER_BUILD=$(mc_get_paper_build_or_latest $PAPER_VERSION)
+    PAPER_VERSION=$(mc_paper_version_get_or_default $1)
+    PAPER_BUILD=$(mc_paper_version_build_latest_get $PAPER_VERSION)
     echo $PAPER_BUILD
   else
     echo $2
   fi
 }
 
-# get the paper jar URL
-# param1: the paper version to use, if not set, use the default
-# param2: the paper build to use, if not set, use the default
-mc_get_paper_jar_url() {
-  PAPER_VERSION=$(mc_get_paper_version_or_latest $1)
-  PAPER_BUILD=$(mc_get_paper_build $1 $2)
+# Function: mc_paper_java_jar_url_get
+# Description: Get the paper jar URL
+# Parameters:
+# - $1: the paper version to use, if not set, use the default
+# - $2: the paper build to use, if not set, use the default
+#
+mc_paper_java_jar_url_get() {
+  PAPER_VERSION=$(mc_paper_version_get_or_default $1)
+  PAPER_BUILD=$(mc_paper_version_build_get_or_default $1 $2)
   echo "https://papermc.io/api/v2/projects/paper/versions/$PAPER_VERSION/builds/$PAPER_BUILD/downloads/paper-$PAPER_VERSION-$PAPER_BUILD.jar"
 }
 
-# ensure a directory exists
-# param1: the directory to check
-mc_ensure_dir_exists() {
-  if [ ! -d $1 ]; then
-    mkdir -p $1
-  fi
-}
-
-# download and install the Microsoft OpenJDK 21
-mc_download_and_install_openjdk() {
-  UBUNTU_RELEASE=`lsb_release -rs`
-  wget https://packages.microsoft.com/config/ubuntu/${UBUNTU_RELEASE}/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
-  sudo dpkg -i packages-microsoft-prod.deb
-
-  # install the Microsoft OpenJDK 21
-  sudo apt-get install apt-transport-https
-  sudo apt-get update
-  sudo apt-get install msopenjdk-21
-
-  # set the default Java version to Microsoft OpenJDK 21
-  sudo update-java-alternatives --set msopenjdk-21-amd64
-
-  # check to make sure it is installed
-  VERSION=$(java --version)
-
-  # Check that the default Java version is Microsoft OpenJDK 21
-  if [[ $VERSION == *"OpenJDK"* && $VERSION == *"64-Bit"* && $VERSION == *"Microsoft"* && $VERSION == *"21"* ]]; then
-    echo -e "\e[32mMicrosoft OpenJDK 21 installed successfully.\e[0m"
-  else
-    echo -e "\e[31mMicrosoft OpenJDK 21 did not install successfully.\e[0m"
-    exit 1
-  fi
-}
-
-# download the paper jar file
-# param1: the world name, if not set, use the default
-# param2: the paper version to use, if not set, use the default
-# param3: the paper build to use, if not set, use the default
-mc_download_paper_server_jar() {
-  WORLD=$(mc_get_world_basename_or_default $1)
-  JAR_FQ_FILE=$(mc_get_world_paper_server_jar_fq_filename $WORLD)
-  JAR_URL=$(mc_get_paper_jar_url $2 $3)
+# Function: mc_paper_java_jar_download
+# Description: Download the PaperMC server jar file
+# Parameters:
+# - $1: the world name, if not set, use the default
+# - $2: the paper version to use, if not set, use the default
+# - $3: the paper build to use, if not set, use the default
+#
+mc_paper_java_jar_download() {
+  WORLD=$(mc_world_name_get_or_default $1)
+  JAR_FQ_FILE=$(mc_world_java_jar_fq_filename_get_or_default $WORLD)
+  JAR_URL=$(mc_paper_java_jar_url_get $2 $3)
 
   # download the PaperMC server jar file
   echo "Downloading PaperMC"
@@ -249,7 +269,7 @@ mc_download_paper_server_jar() {
   echo "    TO: $JAR_FQ_FILE"
   echo
 
-  mc_ensure_dir_exists $(dirname $JAR_FQ_FILE)
+  mc_global_ensure_dir_exists $(dirname $JAR_FQ_FILE)
   curl -J -L $JAR_URL -o $JAR_FQ_FILE
 
   # check to make sure it's at least 1 mega byte
@@ -269,14 +289,17 @@ mc_download_paper_server_jar() {
   echo 
 }
 
-# accept the eula for the specified world
-# param1: the world name, if not set, use the default
-mc_accept_eula() {
-  WORLD=$(mc_get_world_basename_or_default $1)
-  WORLD_FQ_DIR=$(mc_get_world_fq_dir $WORLD)
+# Function: mc_world_eula_accept
+# Description: Accept the EULA for the specified world
+# Parameters:
+# - $1: the world name, if not set, use the default
+#
+mc_world_eula_accept() {
+  WORLD=$(mc_world_name_get_or_default $1)
+  WORLD_FQ_DIR=$(mc_world_fq_dir_get_or_default $WORLD)
 
   # change to the world directory
-  mc_ensure_dir_exists $WORLD_FQ_DIR
+  mc_global_ensure_dir_exists $WORLD_FQ_DIR
   cd $WORLD_FQ_DIR
 
   # if there is no eula.txt file, create one
@@ -297,25 +320,215 @@ mc_accept_eula() {
   fi
 }
 
-# get the service file content for the specified world and slot
-# param1: the world name, if not set, use the default
-# param2: the slot number, if not set, use the default
-mc_get_world_service_file_content() {
-  WORLD=$(mc_get_world_basename_or_default $1)
-  SERVER_SLOT=$(mc_get_slot_or_default $2)
+# Function: mc_world_create
+# Description: Create a new world
+# Parameters:
+# - $1: the world name, if not set, use the default
+# - $2: the world description, if not set, use the default
+# - $3: the paper version to use, if not set, use the default
+# - $4: the paper build to use, if not set, use the default
+#
+mc_world_create() {
+  WORLD=$(mc_world_name_get_or_default $1)
+  echo "Creating world $WORLD ..."
+  WORLD_DESCRIPTION=$(mc_world_description_get_or_default $WORLD "$2")
+  echo "  Description: $WORLD_DESCRIPTION"
+  WORLD_FQ_DIR=$(mc_world_fq_dir_get_or_default $WORLD)
+  echo "  Directory: $WORLD_FQ_DIR"
+  PAPER_VERSION=$(mc_paper_version_get_or_default $3)
+  echo "  Paper Version: $PAPER_VERSION"
+  PAPER_BUILD=$(mc_paper_version_build_get_or_default $PAPER_VERSION $4)
+  echo "  Paper Build: $PAPER_BUILD"
+  echo
+
+  # if the world already exists, exit
+  if [ -d $WORLD_FQ_DIR ]; then
+    echo -e "\e[31mWorld $WORLD already exists.\e[0m"
+    exit 1
+  fi
+
+  # create the world directory
+  mc_global_ensure_dir_exists $WORLD_FQ_DIR
+
+  # set the world description
+  mc_world_description_set $WORLD "$WORLD_DESCRIPTION"
+
+  # download the PaperMC server jar file
+  mc_paper_java_jar_download $WORLD $PAPER_VERSION $PAPER_BUILD
+
+  # accept the EULA
+  mc_world_eula_accept $WORLD
+
+  echo -e "\e[32m$WORLD created successfully.\e[0m"
+}
+
+# Function: mc_world_update_paper_version
+# Description: Update the PaperMC version for the specified world
+# Parameters:
+# - $1: the world name, if not set, use the default
+# - $2: the paper version to use, if not set, use the default
+# - $3: the paper build to use, if not set, use the default
+#
+mc_world_update_paper_version() {
+  WORLD=$(mc_world_name_get_or_default $1)
+  echo "Updating world $WORLD ..."
+  WORLD_FQ_DIR=$(mc_world_fq_dir_get_or_default $WORLD)
+  echo "  Directory: $WORLD_FQ_DIR"
+  PAPER_VERSION=$(mc_paper_version_get_or_default $2)
+  echo "  Paper Version: $PAPER_VERSION"
+  PAPER_BUILD=$(mc_paper_version_build_get_or_default $PAPER_VERSION $3)
+  echo "  Paper Build: $PAPER_BUILD"
+  echo
+
+  # if world doesn't exist, exit
+  if [ ! -d $WORLD_FQ_DIR ]; then
+    echo -e "\e[31mWorld $WORLD does not exist.\e[0m"
+    exit 1
+  fi
+
+  # download the PaperMC server jar file
+  mc_paper_java_jar_download $WORLD $PAPER_VERSION $PAPER_BUILD
+
+  echo -e "\e[32m$WORLD updated to PaperMC $PAPER_VERSION build $PAPER_BUILD.\e[0m"
+}
+
+# Function: mc_world_update_description
+# Description: Update the description for the specified world
+# Parameters:
+# - $1: the world name, if not set, use the default
+# - $2: the world description
+#
+mc_world_update_description() {
+  WORLD=$(mc_world_name_get_or_default $1)
+  echo "Updating world $WORLD ..."
+  WORLD_FQ_DIR=$(mc_world_fq_dir_get_or_default $WORLD)
+  echo "  Directory: $WORLD_FQ_DIR"
+  WORLD_DESCRIPTION=$(mc_world_description_get_or_default $WORLD "$2")
+  echo "  Description: $WORLD_DESCRIPTION"
+  echo
+
+  # if world doesn't exist, exit
+  if [ ! -d $WORLD_FQ_DIR ]; then
+    echo -e "\e[31mWorld $WORLD does not exist.\e[0m"
+    exit 1
+  fi
+
+  # set the world description
+  mc_world_description_set $WORLD "$WORLD_DESCRIPTION"
+
+  echo -e "\e[32m$WORLD description updated to $WORLD_DESCRIPTION.\e[0m"
+}
+
+# Function: mc_service_slot_get_or_default
+# Description: Get the service "slot" or the default
+# Parameters:
+# - $1: the slot number, if not set, use the default
+#
+mc_service_slot_get_or_default() {
+  if [ -z "$1" ]; then
+    echo 1
+  else
+    echo $1
+  fi
+}
+
+# Function: mc_service_slot_name_get
+# Description: Get the service file name for the specified slot
+# Parameters:
+# - $1: the slot number, if not set, use the default
+#
+mc_service_slot_name_get() {
+  echo "minecraft-slot-$(mc_service_slot_get_or_default $1).service"
+}
+
+# Function: mc_service_slot_fq_filename_get
+# Description: Get the service file fq filename for the specified slot
+# Parameters:
+# - $1: the slot number, if not set, use the default
+#
+mc_service_slot_fq_filename_get() {
+  echo "/etc/systemd/system/$(mc_service_slot_name_get $1)"
+}
+
+# Function: mc_service_slot_start
+# Description: Start the service for the specified slot
+# Parameters:
+# - $1: the slot number, if not set, use the default
+#
+mc_service_slot_start() {
+  SERVER_SLOT=$(mc_service_slot_get_or_default $1)
+  SERVICE_NAME=$(mc_service_slot_name_get $SERVER_SLOT)
+
+  echo "Starting service $SERVICE_NAME ..."
+  sudo systemctl start $SERVICE_NAME
+  echo "Starting service $SERVICE_NAME ... Done!"
+  echo
+}
+
+# Function: mc_service_slot_stop
+# Description: Stop the service for the specified slot
+# Parameters:
+# - $1: the slot number, if not set, use the default
+#
+mc_service_slot_stop() {
+  SERVER_SLOT=$(mc_service_slot_get_or_default $1)
+  SERVICE_NAME=$(mc_service_slot_name_get $SERVER_SLOT)
+
+  echo "Stopping service $SERVICE_NAME ..."
+  sudo systemctl stop $SERVICE_NAME
+  echo "Stopping service $SERVICE_NAME ... Done!"
+  echo
+}
+
+# Function: mc_service_slot_reload_daemon
+# Description: Reload the systemd daemon
+# Parameters: None
+#
+mc_service_slot_reload_daemon() {
+  echo "Reloading systemd ..."
+  sudo systemctl daemon-reload
+  echo "Reloading systemd ... Done!"
+  echo
+}
+
+# Function: mc_service_slot_enable
+# Description: Enable the service for the specified slot
+# Parameters:
+# - $1: the slot number, if not set, use the default
+#
+mc_service_slot_enable() {
+  SERVER_SLOT=$(mc_service_slot_get_or_default $1)
+  SERVICE_NAME=$(mc_service_slot_name_get $SERVER_SLOT)
+
+  echo "Enabling service ..."
+  sudo systemctl enable $SERVICE_NAME
+  echo "Enabling service ... Done!"
+  echo
+}
+
+# Function: mc_world_service_slot_file_content_get
+# Description: Get the service file content for the specified world and slot
+# Parameters:
+# - $1: the world name, if not set, use the default
+# - $2: the slot number, if not set, use the default
+#
+mc_world_service_slot_file_content_get() {
+  WORLD=$(mc_world_name_get_or_default $1)
+  SERVER_SLOT=$(mc_service_slot_get_or_default $2)
+  SERVER_SLOT_NAME=$(mc_service_slot_name_get $SERVER_SLOT)
 
   JAVA_DIR=$(dirname $(which java))
-  JAR_FQ_FILE=$(mc_get_world_paper_server_jar_fq_filename $WORLD)
-  WORLD_FQ_DIR=$(mc_get_world_fq_dir $WORLD)
-  MC_USER=$(mc_get_user_name)
+  JAR_FQ_FILE=$(mc_world_java_jar_fq_filename_get_or_default $WORLD)
+  WORLD_FQ_DIR=$(mc_world_fq_dir_get_or_default $WORLD)
+  MC_USER=$(mc_global_user_name_get)
 
-  _=$(mc_set_world_description $WORLD)
+  _=$(mc_world_description_set $WORLD)
 
   # output the service file
   echo "# minecraft.service"
   echo ""
   echo "[Unit]"
-  echo "Description=minecraft-slot-$SERVER_SLOT.service"
+  echo "Description=$SERVER_SLOT_NAME"
   echo "After=network.target"
   echo ""
   echo "[Service]"
@@ -329,58 +542,208 @@ mc_get_world_service_file_content() {
   echo "WantedBy=multi-user.target"
 }
 
-# get the service file name for the specified slot
-# param1: the slot number, if not set, use the default
-mc_get_service_base_file_name() {
-  echo "minecraft-slot-$(mc_get_slot_or_default $1).service"
-}
-
-# create the service file for the specified world and slot
-# param1: the world name, if not set, use the default
-# param2: the slot number, if not set, use the default
-mc_create_world_service_file() {
+# Function: mc_world_service_slot_file_create
+# Description: Create the service file for the specified world and slot
+# Parameters:
+# - $1: the world name, if not set, use the default
+# - $2: the slot number, if not set, use the default
+#
+mc_world_service_slot_file_create() {
   TEMP_FILE_NAME=temp-file.service
 
   # create a temp version of the service file
-  SERVICE_FILE_CONTENT=$(mc_get_world_service_file_content $1 $2)
+  SERVICE_FILE_CONTENT=$(mc_world_service_slot_file_content_get $1 $2)
   echo "$SERVICE_FILE_CONTENT" > $TEMP_FILE_NAME
 
   # copy the temp file to the service file
-  SERVER_SLOT=$(mc_get_slot_or_default $2)
-  SERVICE_FILE_NAME=$(mc_get_service_base_file_name $2)
-  sudo cp $TEMP_FILE_NAME /etc/systemd/system/$SERVICE_FILE_NAME
+  SERVER_SLOT=$(mc_service_slot_get_or_default $2)
+  SERVICE_FQ_FILE_NAME=$(mc_service_slot_fq_filename_get $SERVER_SLOT)
+  sudo cp $TEMP_FILE_NAME $SERVICE_FQ_FILE_NAME
   rm $TEMP_FILE_NAME
 
-  echo /etc/systemd/system/$SERVICE_FILE_NAME
+  echo $SERVICE_FQ_FILE_NAME
 }
 
-# quick test of some of the core functions
-mc_test1() {
-  DO_VERSION_STUFF=false
-  DO_NON_VERSION_STUFF=false
-  if [ -z "$1" ]; then
-    DO_VERSION_STUFF=true
-    DO_NON_VERSION_STUFF=true
+# Function: mc_world_start_in_slot
+# Description: Start the specified world in the specified slot
+# Parameters:
+# - $1: the world name, if not set, use the default
+# - $2: the slot number, if not set, use the default
+#
+mc_world_start_in_slot() {
+  WORLD=$(mc_world_name_get_or_default $1)
+  SERVER_SLOT=$(mc_service_slot_get_or_default $2)
+  SERVICE_FQ_FILE_NAME=$(mc_service_slot_fq_filename_get $SERVER_SLOT)
+  JAR_FQ_FILE=$(mc_world_java_jar_fq_filename_get_or_default $WORLD)
+
+  # if the world doesn't exist, exit
+  if [ ! -d $(mc_world_fq_dir_get_or_default $WORLD) ]; then
+    echo -e "\e[31mWorld $WORLD does not exist.\e[0m"
+    exit 1
+  fi
+
+  # if the java jar file doesn't exist, exit
+  if [ ! -f $JAR_FQ_FILE ]; then
+    echo -e "\e[31mWorld $WORLD does not have a paper-server.jar file.\e[0m"
+    exit 1
+  fi
+
+  # stop the previous service if it exists
+  if [ -f $SERVICE_FQ_FILE_NAME ]; then
+    mc_service_slot_stop $SERVER_SLOT
+  fi
+
+  # create the new service file
+  echo "Updating service for world: $WORLD, slot: $SERVER_SLOT ..."
+  _=$(mc_world_service_slot_file_create $WORLD $SERVER_SLOT)
+  echo "Updating service for world: $WORLD, slot: $SERVER_SLOT ... Done!"
+  echo
+
+  # reload the systemd daemon
+  mc_service_slot_reload_daemon
+
+  # enable the service
+  mc_service_slot_enable $SERVER_SLOT
+  
+  # start the service
+  mc_service_slot_start $SERVER_SLOT
+}
+
+# Function: mc_check_service_slot
+# Description: Check the status of the specified service slot
+# Parameters:
+# - $1: the slot number, if not set, use the default
+#
+mc_check_service_slot() {
+  SERVER_SLOT=$(mc_service_slot_get_or_default $1)
+  SERVICE_NAME=$(mc_service_slot_name_get $SERVER_SLOT)
+
+  echo "Checking service $SERVICE_NAME ..."
+  STATUS=$(systemctl status $SERVICE_NAME)
+  echo "$STATUS"
+  echo
+}
+
+# Function: mc_service_slot_wait_for_timings_reset
+# Description: Wait for the "Timings Reset" message
+# Parameters:
+# - $1: the slot number, if not set, use the default
+#
+mc_service_slot_wait_for_timings_reset() {
+  SERVER_SLOT=$(mc_service_slot_get_or_default $1)
+  SERVICE_NAME=$(mc_service_slot_name_get $SERVER_SLOT)
+  SERVICE_FQ_FILE_NAME=$(mc_service_slot_fq_filename_get $SERVER_SLOT)
+
+  # if the service file doesn't exist, exit
+  if [ ! -f $SERVICE_FQ_FILE_NAME ]; then
+    echo -e "\e[31mService $SERVICE_NAME does not exist.\e[0m"
+    exit 1
+  fi
+
+  # check the status before we go into looping...
+  STATUS=$(systemctl status $SERVICE_NAME)
+  if [[ $STATUS == *"Timings Reset"* ]]; then
+    echo -e "\e[32mTimings Reset\e[0m"
+    return
+  fi
+
+  echo "Waiting for Timings Reset ..."
+  echo
+  echo "  Press Ctrl+C to stop waiting."
+  echo
+
+  # wait for the "Timings Reset" message
+  while true; do
+    STATUS=$(systemctl status $SERVICE_NAME)
+    if [[ $STATUS == *"Timings Reset"* ]]; then
+      echo -e "\e[32mTimings Reset\e[0m"
+      break
+    fi
+    sleep 1
+  done
+}
+
+# Function: mc_test_global_get_functions
+# Description: Test the global functions that accept no parameters
+# Parameters: None
+#
+mc_test_global_get_functions() {
+  echo mc_global_dependencies_check=$(mc_global_dependencies_check)
+  echo mc_global_user_name_get=$(mc_global_user_name_get)
+  echo mc_global_fq_dir_get=$(mc_global_fq_dir_get)
+  echo mc_worlds_fq_dir_get=$(mc_worlds_fq_dir_get)
+  echo mc_worlds_get=$(mc_worlds_get)
+  echo mc_worlds_json_get=$(mc_worlds_json_get)
+}
+
+# Function: mc_test_world_get_functions
+# Description: Test the non-version functions
+# Parameters:
+# - $1: the world name, if not set, use the default
+# - $2: the slot number, if not set, use the default
+#
+mc_test_world_get_functions() {
+  echo mc_world_fq_dir_get_or_default=$(mc_world_fq_dir_get_or_default $1)
+  echo mc_world_description_fq_filename_get_or_default=$(mc_world_description_fq_filename_get_or_default $1)
+  echo mc_world_description_get_or_default=$(mc_world_description_get_or_default $1)
+  echo mc_world_java_jar_fq_filename_get_or_default=$(mc_world_java_jar_fq_filename_get_or_default $1)
+  echo mc_world_service_slot_file_content_get=$(mc_world_service_slot_file_content_get $1 $2)
+}
+
+# Function: mc_test_service_slot_get_functions
+# Description: Test the service slot functions
+# Parameters:
+# - $1: the slot number, if not set, use the default
+#
+mc_test_service_slot_get_functions() {
+  echo mc_service_slot_get_or_default=$(mc_service_slot_get_or_default $1)
+  echo mc_service_slot_name_get=$(mc_service_slot_name_get $1)
+}
+
+# Function: mc_test_paper_get_version_and_build_functions
+# Description: Test the version functions
+# Parameters:
+# - $1: the paper version to use, if not set, use the default
+# - $2: the paper build to use, if not set, use the default
+#
+mc_test_paper_get_version_and_build_functions() {
+  echo mc_paper_version_latest_get=$(mc_paper_version_latest_get $1 $2)
+  echo mc_paper_version_get_or_default=$(mc_paper_version_get_or_default $1 $2)
+  echo mc_paper_version_build_latest_get=$(mc_paper_version_build_latest_get $1 $2)
+  echo mc_paper_version_build_get_or_default=$(mc_paper_version_build_get_or_default $1 $2)
+  echo mc_paper_java_jar_url_get=$(mc_paper_java_jar_url_get $1 $2)
+}
+
+mc_test_overall() {
+
+  mc_test_global_get_functions
+
+  DO_PAPER_VERSION_TESTS=false
+  DO_WORLD_TESTS=false
+  DO_SERVICE_SLOT_TESTS=false
+
+  if [ "$1" == "1" ]; then
+    DO_SERVICE_SLOT_TESTS=true
+  elif [ "$1" == "2" ]; then
+    DO_SERVICE_SLOT_TESTS=true
+  elif [ -z "$1" ]; then
+    DO_PAPER_VERSION_TESTS=true
+    DO_WORLD_TESTS=true
   elif [[ $1 == 1.* ]]; then
-    DO_VERSION_STUFF=true
+    DO_PAPER_VERSION_TESTS=true
   else
-    DO_NON_VERSION_STUFF=true
+    DO_WORLD_TESTS=true
   fi
 
-  if [ "$DO_NON_VERSION_STUFF" = true ]; then
-    echo mc_get_user_name=$(mc_get_user_name)
-    echo mc_get_fq_dir=$(mc_get_fq_dir $1 $2 $3)
-    echo mc_get_worlds_fq_dir=$(mc_get_worlds_fq_dir $1 $2 $3)
-    echo mc_get_world_fq_dir=$(mc_get_world_fq_dir $1 $2 $3)
-    echo mc_get_world_description_fq_filename=$(mc_get_world_description_fq_filename $1 $2 $3)
-    echo mc_get_world_paper_server_jar_fq_filename=$(mc_get_world_paper_server_jar_fq_filename $1 $2 $3)
+  if [ "$DO_SERVICE_SLOT_TESTS" = true ]; then
+    mc_test_service_slot_get_functions $1
   fi
 
-  if [ "$DO_VERSION_STUFF" = true ]; then
-    echo mc_get_latest_paper_version=$(mc_get_latest_paper_version $1 $2 $3)
-    echo mc_get_paper_version_or_latest=$(mc_get_paper_version_or_latest $1 $2 $3)
-    echo mc_get_paper_build_or_latest=$(mc_get_paper_build_or_latest $1 $2 $3)
-    echo mc_get_paper_build=$(mc_get_paper_build $1 $2 $3)
-    echo mc_get_paper_jar_url=$(mc_get_paper_jar_url $1 $2 $3)
+  if [ "$DO_WORLD_TESTS" = true ]; then
+    mc_test_world_get_functions $1 $2
+  fi
+
+  if [ "$DO_PAPER_VERSION_TESTS" = true ]; then
+    mc_test_paper_get_version_and_build_functions $1 $2
   fi
 }
