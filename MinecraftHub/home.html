@@ -71,6 +71,52 @@
       </form>
 
       <script>
+
+        function hideLoader() {
+            var loader = document.querySelector(".loader");
+            loader.style.display = "none";
+        }
+
+        function getActiveButtonWorld() {
+          var activeButtons = document.getElementsByClassName("active");
+          return activeButtons.length == 1
+            ? activeButtons[0].innerHTML
+            : null;
+        }
+
+        function startWorldInSlot(world, slot) {
+          try {
+            fetch(`http://localhost:8080/load-world?name=${world}&slot=${slot}`)
+              .then(response => {
+                if (!response.ok) {
+                  throw new Error('Network response was not ok');
+                } else {
+                  console.log('load-world succeeded!');
+                }
+              });
+          } catch (error) {
+            console.error('Error:', error);
+          }
+        }
+
+        function waitForTimingReset(slot) {
+          try {
+            fetch(`http://localhost:8080/wait-for-timing-reset?slot=${slot}`)
+              .then(response => {
+                if (!response.ok) {
+                  throw new Error('Network response was not ok');
+                } else {
+                  hideLoader();
+                  successCap.innerText = 'Success! Your world has been loaded!'
+
+                  console.log('timing reset!!');
+                }
+              });
+          } catch (error) {
+            console.error('Error:', error);
+          }
+        }
+
         var buttonClickSound = new Audio('./minecraft-click-cropped.mp3');
     
         function playSound() {
@@ -157,6 +203,11 @@
             loader.style.display = "block";
             confirmButton.style.display = "none";
             myGameArea.clear();
+            const world = getActiveButtonWorld();
+            const slot = "1";
+            startWorldInSlot(world, slot);
+            waitForTimingReset(slot);
+            successCap.innerText = 'Loading your world...';
         }
     
         window.onclick = function(event) {

@@ -35,7 +35,6 @@ class Program
         context.Response.AddHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
         context.Response.AddHeader("Access-Control-Allow-Headers", "Content-Type");
 
-
         Console.WriteLine($"Received {method} request for {path}");
 
         context.Response.ContentType = "application/json";
@@ -73,6 +72,33 @@ class Program
                 context.Response.ContentLength64 = buffer.Length;
                 context.Response.OutputStream.Write(buffer, 0, buffer.Length);
             }
+        }
+        else if (method == "GET" && path == "/load-world")
+        {
+            string worldName = context.Request.QueryString["name"] ?? "World1";
+            string slot = context.Request.QueryString["slot"] ?? "1";
+
+            // Execute the shell command to load the world into the slot specified
+            StartWorldInSlot(worldName, slot);
+
+            context.Response.StatusCode = (int)HttpStatusCode.OK;
+            string response = $"World '{worldName}' is being created!";
+            byte[] buffer = Encoding.UTF8.GetBytes(response);
+            context.Response.ContentLength64 = buffer.Length;
+            context.Response.OutputStream.Write(buffer, 0, buffer.Length);
+        }
+        else if (method == "GET" && path == "/wait-for-timing-reset")
+        {
+            string slot = context.Request.QueryString["slot"] ?? "1";
+
+            // Execute the shell command to load the world into the slot specified
+            WaitForTimingReset(slot);
+
+            context.Response.StatusCode = (int)HttpStatusCode.OK;
+            string response = $"Timings Reset for slot {slot}.";
+            byte[] buffer = Encoding.UTF8.GetBytes(response);
+            context.Response.ContentLength64 = buffer.Length;
+            context.Response.OutputStream.Write(buffer, 0, buffer.Length);
         }
         else if (method == "GET" && path == "/home.html")
         {
@@ -182,6 +208,75 @@ class Program
         else
         {
             Console.WriteLine("World created successfully: " + output);
+        }
+    }
+
+    private static void StartWorldInSlot(string? worldName, string? slot)
+    {
+        string command = $"/mnt/c/src/minecraft-scripts/scripts/90-start-world-in-slot.sh \"{worldName}\" \"{slot}\"";
+        Console.WriteLine($"world_name: {worldName}");
+        Console.WriteLine($"slot: {slot}");
+        Console.WriteLine($"command: {command}");
+        var process = new Process
+        {
+            StartInfo = new ProcessStartInfo
+            {
+                FileName = "wsl.exe",
+                Arguments = $"-u root -e {command}",
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            }
+        };
+
+        process.Start();
+        string output = process.StandardOutput.ReadToEnd();
+        string error = process.StandardError.ReadToEnd();
+        process.WaitForExit();
+
+        if (!string.IsNullOrEmpty(error))
+        {
+            Console.WriteLine("Error while creating world: " + error);
+            Console.WriteLine(output);
+        }
+        else
+        {
+            Console.WriteLine("World created successfully: " + output);
+        }
+    }
+
+    private static void WaitForTimingReset(string slot)
+    {
+        string command = $"/mnt/c/src/minecraft-scripts/scripts/91-wait-for-timings-reset.sh {slot}";
+        Console.WriteLine($"slot: {slot}");
+        Console.WriteLine($"command: {command}");
+        var process = new Process
+        {
+            StartInfo = new ProcessStartInfo
+            {
+                FileName = "wsl.exe",
+                Arguments = $"-u root -e {command}",
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            }
+        };
+
+        process.Start();
+        string output = process.StandardOutput.ReadToEnd();
+        string error = process.StandardError.ReadToEnd();
+        process.WaitForExit();
+
+        if (!string.IsNullOrEmpty(error))
+        {
+            Console.WriteLine("Error waiting for timings reset: " + error);
+            Console.WriteLine(output);
+        }
+        else
+        {
+            Console.WriteLine("Timings Reset: " + output);
         }
     }
 }
