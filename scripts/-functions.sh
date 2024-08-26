@@ -5,6 +5,35 @@ MC_DEFAULT_WORLD=World1
 MC_FQ_DIR_ON_WSL=/mnt/c/data/mc
 MC_FQ_DIR_ON_LINUX=/data/
 
+# Function: mc_global_download_and_install_openjdk_21
+# Description: Download and install the Microsoft OpenJDK 21
+# Parameters: None
+#
+mc_global_download_and_install_openjdk_21() {
+  UBUNTU_RELEASE=`lsb_release -rs`
+  wget https://packages.microsoft.com/config/ubuntu/${UBUNTU_RELEASE}/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+  sudo dpkg -i packages-microsoft-prod.deb
+
+  # install the Microsoft OpenJDK 21
+  sudo apt-get install apt-transport-https
+  sudo apt-get update
+  sudo apt-get install msopenjdk-21
+
+  # set the default Java version to Microsoft OpenJDK 21
+  sudo update-java-alternatives --set msopenjdk-21-amd64
+
+  # check to make sure it is installed
+  VERSION=$(java --version)
+
+  # Check that the default Java version is Microsoft OpenJDK 21
+  if [[ $VERSION == *"OpenJDK"* && $VERSION == *"64-Bit"* && $VERSION == *"Microsoft"* && $VERSION == *"21"* ]]; then
+    echo -e "\e[32mMicrosoft OpenJDK 21 installed successfully.\e[0m"
+  else
+    echo -e "\e[31mMicrosoft OpenJDK 21 did not install successfully.\e[0m"
+    exit 1
+  fi
+}
+
 # Function: mc_global_dependencies_check
 # Description: Check to make sure all dependencies are installed
 # Parameters: None
@@ -38,6 +67,22 @@ mc_global_fq_dir_get() {
   else
     echo $MC_FQ_DIR_ON_LINUX
   fi
+}
+
+# Function: mc_global_fq_scripts_dir_get
+# Description: Get the base Minecraft scripts directory
+# Parameters: None
+#
+mc_global_fq_scripts_dir_get() {
+  echo $(dirname $0)
+}
+
+# Function: mc_global_fq_default_files_dir_get
+# Description: Get the base Minecraft default files directory
+# Parameters: None
+#
+mc_global_fq_default_files_dir_get() {
+  echo "$(mc_global_fq_scripts_dir_get)/default-files"
 }
 
 # Function: mc_global_user_name_get
@@ -174,6 +219,8 @@ mc_worlds_json_get() {
       echo "  }"
     done
     echo "]"
+  else
+    echo "[]"
   fi
 }
 
@@ -318,6 +365,33 @@ mc_world_eula_accept() {
     echo -e "\e[31mEULA not accepted.\e[0m"
     exit 1
   fi
+}
+
+# Function: mc_world_default_files_copy
+# Description: Copy the default files to the specified world
+# Parameters:
+# - $1: the world name, if not set, use the default
+#
+mc_world_default_files_copy() {
+  WORLD=$(mc_world_name_get_or_default $1)
+  WORLD_FQ_DIR=$(mc_world_fq_dir_get_or_default $WORLD)
+  DEFAULT_FILES_FQ_DIR=$(mc_global_fq_default_files_dir_get)
+
+  # if the world doesn't exist, exit
+  if [ ! -d $WORLD_FQ_DIR ]; then
+    echo -e "\e[31mWorld $WORLD does not exist.\e[0m"
+    exit 1
+  fi
+
+  # for each of the files in the default files directory
+  for FILE in $(ls $DEFAULT_FILES_FQ_DIR); do
+    # check if the file exists in the world directory
+    CHECK=$WORLD_FQ_DIR/$FILE
+    if [ ! -f $CHECK ]; then
+      cp $DEFAULT_FILES_FQ_DIR/$FILE $WORLD_FQ_DIR
+      echo -e "\e[32mCopied default file '$FILE' to '$CHECK' copied.\e[0m"
+    fi
+  done
 }
 
 # Function: mc_world_create
@@ -564,6 +638,43 @@ mc_world_service_slot_file_create() {
   echo $SERVICE_FQ_FILE_NAME
 }
 
+# Function: mc_world_service_slot_port_get
+# Description: Get the port for the specified world and slot
+# Parameters:
+# - $1: the world name, if not set, use the default
+# - $2: the slot number, if not set, use the default
+#
+mc_world_service_slot_port_get() {
+  WORLD=$(mc_world_name_get_or_default $1)
+  SERVER_SLOT=$(mc_service_slot_get_or_default $2)
+
+  # use port 25565 for slot 1
+  # use port 25566 for slot 2
+  # ...
+  echo $((25564 + $SERVER_SLOT))
+}
+
+# Function: mc_world_server_properties_update
+# Description: Update the server properties file for the specified world and slot
+# Parameters:
+# - $1: the world name, if not set, use the default
+# - $2: the slot number, if not set, use the default
+#
+mc_world_server_properties_update() {
+  WORLD=$(mc_world_name_get_or_default $1)
+  SERVER_SLOT=$(mc_service_slot_get_or_default $2)
+  SERVER_SLOT_PORT=$(mc_world_service_slot_port_get $WORLD $SERVER_SLOT)
+  SERVER_PROPERTIES_FQ_FILE=$(mc_world_fq_dir_get_or_default $WORLD)/server.properties
+
+  # if the server properties file doesn't exist, create it
+  if [ ! -f $SERVER_PROPERTIES_FQ_FILE ]; then
+    mc_world_default_files_copy $WORLD
+  fi
+
+  # update the server properties file
+  sed -i "s/server-port=.*/server-port=$SERVER_SLOT_PORT/g" $SERVER_PROPERTIES_FQ_FILE
+}
+
 # Function: mc_world_start_in_slot
 # Description: Start the specified world in the specified slot
 # Parameters:
@@ -592,6 +703,9 @@ mc_world_start_in_slot() {
   if [ -f $SERVICE_FQ_FILE_NAME ]; then
     mc_service_slot_stop $SERVER_SLOT
   fi
+
+  # update the server properties file
+  mc_world_server_properties_update $WORLD $SERVER_SLOT
 
   # create the new service file
   echo "Updating service for world: $WORLD, slot: $SERVER_SLOT ..."
@@ -671,6 +785,9 @@ mc_test_global_get_functions() {
   echo mc_global_dependencies_check=$(mc_global_dependencies_check)
   echo mc_global_user_name_get=$(mc_global_user_name_get)
   echo mc_global_fq_dir_get=$(mc_global_fq_dir_get)
+  echo mc_global_fq_scripts_dir_get=$(mc_global_fq_scripts_dir_get)
+  echo mc_global_fq_default_files_dir_get=$(mc_global_fq_default_files_dir_get)
+  echo
   echo mc_worlds_fq_dir_get=$(mc_worlds_fq_dir_get)
   echo mc_worlds_get=$(mc_worlds_get)
   echo mc_worlds_json_get=$(mc_worlds_json_get)
@@ -688,6 +805,7 @@ mc_test_world_get_functions() {
   echo mc_world_description_get_or_default=$(mc_world_description_get_or_default $1)
   echo mc_world_java_jar_fq_filename_get_or_default=$(mc_world_java_jar_fq_filename_get_or_default $1)
   echo mc_world_service_slot_file_content_get=$(mc_world_service_slot_file_content_get $1 $2)
+  echo mc_world_service_slot_port_get=$(mc_world_service_slot_port_get $1 $2)
 }
 
 # Function: mc_test_service_slot_get_functions
