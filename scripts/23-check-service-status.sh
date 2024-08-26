@@ -7,11 +7,4 @@
 #
 
 source $(dirname $0)/-functions.sh
-
-SLOT=$(mc_service_slot_get_or_default $1)
-SERVICE_NAME=$(mc_service_slot_name_get $SLOT)
-
-# check the service status
-echo "Checking service status: $SERVICE_NAME ..."
-STATUS=$(systemctl status $SERVICE_NAME)
-echo "$STATUS"
+mc_check_service_slot
