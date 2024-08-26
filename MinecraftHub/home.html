@@ -7,6 +7,12 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body onload="startGame()">
+
+    <!-- todo -->
+    <!-- after user clicks "submit" on that, but before you call the webserver w/ fetch you could display the loader -->
+    <!-- todo -->
+
+
     <h1>Welcome to my minecraft server hub</h1>
     <div class="mycontainer">
         <div class="active_servers">
@@ -56,22 +62,27 @@
           <div class="loader"></div>
           <button class="confirm" onclick="playSound()">confirm</button>
         </div>
-
-      
       </div>
 
-      <button id="createNW">Create New World</button>
-
-      <form id="myForm">
-        <label for="fname">World Name:</label>
-        <input type="text" id="WorldName" name="WorldName"><br><br>
-        <label for="lname">Description</label>
-        <input type="text" id="worldDescription" name="worldDescription"><br><br>
-        <input type="submit" value="Submit">
-      </form>
+    <!-- CreateNew World inside modal-->
+    <button id="createNW" onclick="playSound()">Create New World</button>
+    <div id="CreateWorldModal" class="modal">
+        <!-- Modal content -->
+        <div class="modal-content">
+            <span class="close"  onclick="playSound()">&times;</span>
+            <p>Please enter the world name and the description of the world</p>
+            <form id="myForm">
+                <label for="fname">World Name:</label>
+                <input type="text" id="WorldName" name="WorldName"><br><br>
+                <label for="lname">Description</label>
+                <input type="text" id="worldDescription" name="worldDescription"><br><br>
+                <input type="submit" value="Submit" id="submit" onclick="playSound()">
+            </form>
+            <div class="loader"></div>
+        </div>
+        </div>
 
       <script>
-
         function hideLoader() {
             var loader = document.querySelector(".loader");
             loader.style.display = "none";
@@ -164,6 +175,7 @@
         var abtns = document.getElementsByClassName("arrowButton");
         var errorModal = document.getElementById("SWError");
         var successModal = document.getElementById("Success");
+        var CreateWorldModal = document.getElementById("CreateWorldModal")
         var successCap = document.getElementById("successCap");
         var closeButtons = document.getElementsByClassName("close");
         var loader = document.querySelector(".loader");
@@ -404,14 +416,23 @@ function updateGameArea() {
 document.getElementById("createNW").addEventListener("click", function() {
     var form = document.getElementById("myForm");
     if (form.style.display === "none") {
-      form.style.display = "block";
+    CreateWorldModal.style.display = "none";
+    form.style.display = "none";
+    
     } else {
-      form.style.display = "none";
+    CreateWorldModal.style.display = "block";
+    var loader = document.querySelector(".loader");
+    form.style.display = "block";
+    loader.style.display = "none";
     }
   });
 
   document.getElementById('myForm').addEventListener('submit', async (event) => {
-  event.preventDefault();
+    event.preventDefault();
+
+  // Display the loader as soon as the form is submitted
+  var loader = document.querySelector(".loader");
+  loader.style.display = "block";
 
   const worldName = document.getElementById('WorldName').value;
     const worldDescription = document.getElementById('worldDescription').value;
@@ -434,13 +455,15 @@ document.getElementById("createNW").addEventListener("click", function() {
     if (response.ok) {
       const result = await response.text();
       console.log(result); // World creation status
-      alert(`World '${worldName}' is being created!`);
-      loadWorldButtons();
+      loadWorldButtons(); // Refresh the world buttons
+      loader.style.display = "none"; // Hide the loader after the request completes
     } else {
       console.error('Failed to create world.');
+      loader.style.display = "none"; // Hide the loader even if there was an error
     }
   } catch (error) {
     console.error('Error:', error);
+    loader.style.display = "none"; // Hide the loader in case of any other error
   }
 });
 

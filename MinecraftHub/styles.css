@@ -192,6 +192,20 @@ div.mycontainer div {
   height: 100px;
 }
 
+#CreateWorldModal.modal-content {
+  background-color: #1f1e1e;
+  margin: auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
+  height: 100px;
+  display: none;
+}
+
+#CreateWorldModal {
+  color: rgb(1, 62, 243);
+}
+
 button.dismiss_OK {
   background-color: cornflowerblue;
   padding: 10px;
@@ -217,7 +231,7 @@ button.confirm {
 }
 
 #createNW {
-  background-color:cadetblue;
+  background-color:grey;
   padding: 10px;
   size: 150%;
 }
