@@ -16,21 +16,23 @@
     <h1>Welcome to my minecraft server hub</h1>
     <div class="mycontainer">
         <div class="active_servers">
-            <h1>mc.mbers.us</h1>
-            <p>This is the 1st server</p>
+            <h1>Slot 1</h1>
+            <p id="activeWorld1"></p>
+            <p>IP: 172.29.156.230</p>
         </div>
         <div>
-            <button class="arrowButton" onclick="playSound()">&larr;</button>
+            <button class="arrowButton" id="1" onclick="playSound()">&larr;</button>
         </div>
     </div>
 
     <div class="mycontainer">
         <div class="active_servers">
-            <h1>mc2.mbers.us</h1>
-            <p>This is the 2nd server</p>
+            <h1>Slot 2</h1>
+            <p id="activeWorld2"></p>
+            <p>IP: Not sure yet</p>
         </div>
         <div>
-            <button class="arrowButton" onclick="playSound()">&larr;</button>
+            <button class="arrowButton" id="2" onclick="playSound()">&larr;</button>
         </div>
     </div>
 
@@ -119,7 +121,10 @@
                 } else {
                   hideLoader();
                   successCap.innerText = 'Success! Your world has been loaded!'
-
+                  successSound.play();
+                  netherPortalAmbient.pause(); // Stop the ambient sound
+                  netherPortalAmbient.currentTime = 0; // Reset the sound
+                  activeWorld1.innerText = `${worldName}`;
                   console.log('timing reset!!');
                 }
               });
@@ -129,10 +134,29 @@
         }
 
         var buttonClickSound = new Audio('./minecraft-click-cropped.mp3');
-    
+        var successSound = new Audio('./Successful_hit.mp3');
+        var errorSound = new Audio('./Random_break.mp3');
+        var flintSteel = new Audio('./Flint_and_steel_click.mp3');
+        var netherPortalAmbient = new Audio('./Nether_portal_ambient.mp3');
+        netherPortalAmbient.loop = true;
+        netherPortalAmbient.volume = 0.3; // set to 30 % max volume
+
         function playSound() {
             buttonClickSound.play();
         }
+
+        function successSoundEffect () {
+            successSound.play();
+        }
+
+        function errorSoundEffect () {
+            errorSound.play();
+        }
+
+        function flintAndSteelSound () {
+            flintSteel.play();
+        }
+        
     
         function loadWorldButtons() {
             var buttonContainer = document.getElementById("buttonContainer");
@@ -181,12 +205,26 @@
         var loader = document.querySelector(".loader");
         var okButton = document.querySelector(".dismiss_OK");
         var confirmButton = document.querySelector(".confirm");
+        let slot = null;
+        var activeWorld1 = document.getElementById("activeWorld1");
+        var activeWorld2 = document.getElementById("activeWorld2");
+
+        document.getElementById('1').addEventListener('click', function(){
+            slot = 1;
+            console.log("slot is set to:", slot);
+        });
+        
+        document.getElementById('2').addEventListener('click', function(){
+            slot = 2;
+            console.log("slot is set to:", slot);
+        });
     
         for (var i = 0; i < abtns.length; i++) {
             abtns[i].addEventListener("click", function() {
                 var activeButtons = document.getElementsByClassName("active");
                 if (activeButtons.length != 1) {
                     errorModal.style.display = "block";
+                    errorSound.play();
                 } else {
                     var world = activeButtons[0].innerHTML;
                     successModal.style.display = "block";
@@ -209,14 +247,17 @@
             playSound();
             errorModal.style.display = "none";
         }
-    
+        
+
+
+
         confirmButton.onclick = function () {
-            playSound();
+            flintSteel.play();
             loader.style.display = "block";
             confirmButton.style.display = "none";
             myGameArea.clear();
+            netherPortalAmbient.play(); // Start playing the ambient sound
             const world = getActiveButtonWorld();
-            const slot = "1";
             startWorldInSlot(world, slot);
             waitForTimingReset(slot);
             successCap.innerText = 'Loading your world...';
@@ -412,7 +453,7 @@ function updateGameArea() {
 }
     
 
-
+// Creates new world
 document.getElementById("createNW").addEventListener("click", function() {
     var form = document.getElementById("myForm");
     if (form.style.display === "none") {
@@ -457,6 +498,7 @@ document.getElementById("createNW").addEventListener("click", function() {
       console.log(result); // World creation status
       loadWorldButtons(); // Refresh the world buttons
       loader.style.display = "none"; // Hide the loader after the request completes
+      successSound.play();
     } else {
       console.error('Failed to create world.');
       loader.style.display = "none"; // Hide the loader even if there was an error
