@@ -617,6 +617,31 @@ mc_service_slot_world_name_set() {
   cat $SLOT_WORLD_NAME_FILE
 }
 
+# Function: mc_service_slot_json_get
+# Description: Get the service slots in "json" format
+# Parameters: None
+#
+mc_service_slot_json_get() {
+  echo "["
+  FIRST=true
+  for SLOT in {1..9}; do
+    SERVICE_FQ_FILE_NAME=$(mc_service_slot_fq_filename_get $SLOT)
+    if [ ! -f $SERVICE_FQ_FILE_NAME ]; then
+      continue
+    fi
+    if [ "$FIRST" = true ]; then
+      FIRST=false
+    else
+      echo ","
+    fi
+    echo "  {"
+    echo "    \"Slot\": $SLOT,"
+    echo "    \"Name\": \"$(mc_service_slot_world_name_get_or_default $SLOT)\""
+    echo "  }"
+  done
+  echo "]"
+}
+
 # Function: mc_world_service_slot_file_content_get
 # Description: Get the service file content for the specified world and slot
 # Parameters:
