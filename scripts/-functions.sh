@@ -788,12 +788,12 @@ mc_world_start_in_slot() {
   mc_service_slot_start $SERVER_SLOT
 }
 
-# Function: mc_check_service_slot
+# Function: mc_service_slot_check
 # Description: Check the status of the specified service slot
 # Parameters:
 # - $1: the slot number, if not set, use the default
 #
-mc_check_service_slot() {
+mc_service_slot_check() {
   SERVER_SLOT=$(mc_service_slot_get_or_default $1)
   SERVICE_NAME=$(mc_service_slot_name_get $SERVER_SLOT)
 

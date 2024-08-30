@@ -7,4 +7,4 @@
 #
 
 source $(dirname $0)/-functions.sh
-mc_check_service_slot
+mc_service_slot_check $1
