@@ -580,6 +580,43 @@ mc_service_slot_enable() {
   echo
 }
 
+# Function: mc_service_slot_world_name_fq_filename_get_or_default
+# Description: Get the slot world name fq filename for the specified slot
+# Parameters:
+# - $1: the slot number, if not set, use the default
+#
+mc_service_slot_world_name_fq_filename_get_or_default() {
+  SERVER_SLOT=$(mc_service_slot_get_or_default $1)
+  echo "$(mc_global_fq_dir_get)/slot-$SERVER_SLOT-world-name.txt"
+}
+
+# Function: mc_service_slot_world_name_get_or_default
+# Description: Get the slot world name for the specified slot
+# Parameters:
+# - $1: the slot number, if not set, use the default
+#
+mc_service_slot_world_name_get_or_default() {
+  SLOT_WORLD_NAME_FILE=$(mc_service_slot_world_name_fq_filename_get_or_default $1)
+  if [ -f $SLOT_WORLD_NAME_FILE ]; then
+    cat $SLOT_WORLD_NAME_FILE
+  else
+    echo $(mc_world_name_get_or_default)
+  fi
+}
+
+# Function: mc_service_slot_world_name_set
+# Description: Set the slot world name for the specified slot
+# Parameters:
+# - $1: the slot number, if not set, use the default
+# - $2: the world name
+#
+mc_service_slot_world_name_set() {
+  SLOT_WORLD_NAME_FILE=$(mc_service_slot_world_name_fq_filename_get_or_default $1)
+  mc_global_ensure_dir_exists $(dirname $SLOT_WORLD_NAME_FILE)
+  echo $2 > $SLOT_WORLD_NAME_FILE
+  cat $SLOT_WORLD_NAME_FILE
+}
+
 # Function: mc_world_service_slot_file_content_get
 # Description: Get the service file content for the specified world and slot
 # Parameters:
@@ -707,6 +744,9 @@ mc_world_start_in_slot() {
   # update the server properties file
   mc_world_server_properties_update $WORLD $SERVER_SLOT
 
+  # update the slot world name
+  mc_service_slot_world_name_set $SERVER_SLOT $WORLD
+
   # create the new service file
   echo "Updating service for world: $WORLD, slot: $SERVER_SLOT ..."
   _=$(mc_world_service_slot_file_create $WORLD $SERVER_SLOT)
@@ -816,6 +856,9 @@ mc_test_world_get_functions() {
 mc_test_service_slot_get_functions() {
   echo mc_service_slot_get_or_default=$(mc_service_slot_get_or_default $1)
   echo mc_service_slot_name_get=$(mc_service_slot_name_get $1)
+  echo mc_service_slot_fq_filename_get=$(mc_service_slot_fq_filename_get $1)
+  echo mc_service_slot_world_name_fq_filename_get_or_default=$(mc_service_slot_world_name_fq_filename_get_or_default $1)
+  echo mc_service_slot_world_name_get_or_default=$(mc_service_slot_world_name_get_or_default $1)
 }
 
 # Function: mc_test_paper_get_version_and_build_functions
