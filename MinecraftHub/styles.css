@@ -1,4 +1,3 @@
-/* CSS */
 @font-face {
   font-family: 'Minecraft';
   src: url('fonts/Minecraft.ttf') format('truetype');
@@ -18,17 +17,25 @@ body {
   font-family: 'Minecraft', sans-serif;
   text-align: center;
   position: relative;
+  overflow-x: hidden;
 }
 
 h1 {
   font-family: 'MinecraftHeader', sans-serif;
   margin-bottom: 20px;
+  font-size: 2.5em;
+  color: #04AA6D;
 }
 
 button {
   background-color: white;
+  color: #000;
   font-family: 'Minecraft', sans-serif;
-  transition: background-color .3s;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.1s;
 }
 
 button:hover {
@@ -37,63 +44,53 @@ button:hover {
 }
 
 button:active {
-  transform: translateY(4px);
-  background-color: #04AA6D;
-  color: white;
+  transform: translateY(2px);
+  background-color: #037a4d;
 }
 
 div.active_servers {
   background-color: #262423;
   border: 4px solid #1f1e1e;
-  height: 25%;
-  width: 25%;
-  padding: 50px;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+  margin: 20px auto;
+  width: 60%;
 }
 
 div.active_servers h1 {
-  color:#04AA6D;
-  font-family: 'Minecraft', sans-serif;
+  color: #04AA6D;
+  font-size: 1.5em;
 }
 
 div.active_servers p {
   color: white;
-  font-family: 'Minecraft', sans-serif;
+}
+
+.mycontainer {
+  overflow: auto;
+  margin: 20px auto;
+  width: 80%;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
 }
 
 .mycontainer button {
-  padding: 5%;
-  font-size: 40px;
+  padding: 20px;
+  font-size: 1.2em;
   background-color: #ffffff;
+  margin: 10px;
 }
 
-.mycontainer button:active {
-  transform: translateY(4px);
-  background-color: #04AA6D;
-  color: white;
-}
-
-.mycontainer button:hover {
-  background-color: #04AA6D;
-  color: white;
-}
-
-div.mycontainer {
-  overflow: auto;
-}
-
-div.mycontainer div {
-  width: 33%;  
-  float: left;
+.myButton {
+  height: var(--worldImage);
+  margin: 5px;
 }
 
 .myButton.active {
   background-color: green;
   color: #ffffff;
-}
-
-.myButton {
-  height: var(--worldImage);
-  margin: 5px; /* Add margin between buttons */
 }
 
 .worlds {
@@ -112,132 +109,151 @@ div.mycontainer div {
   flex-wrap: wrap;
 }
 
-.myButton:active {
-  background-color: green;
-  color: #ffffff;
-}
-
 .catalogue {
   text-align: center;
   background-color: #1f1e1e;
   padding: 20px;
   border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  width: 50%;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+  max-width: 50%;
 }
 
-/* The Modal (background) */
+/* Flexbox or Grid for slot content */
+.slot-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 10px 0;
+  background-color: #262423;
+  padding: 15px;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Slot title */
+.slot-title {
+  font-family: 'Minecraft', sans-serif;
+  font-size: 1.5em;
+  color: #fff;
+  margin-bottom: 10px;
+}
+
+/* IP address styling */
+.slot-ip {
+  font-family: 'Minecraft', sans-serif;
+  font-size: 1em;
+  color: #ccc;
+  margin-bottom: 10px;
+}
+
+.arrow-button {
+  background-color: white;
+  color: #000;
+  font-family: 'Minecraft', sans-serif;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.arrow-button:hover {
+  background-color: #04AA6D; /* Brighter green on hover */
+  color: #ffffff; /* White text color */
+}
+
+.arrow-button:active {
+  transform: translateY(2px);
+  background-color: #037a4d; /* Darker green when active */
+}
+
+
 .modal {
-  display: none; /* Hidden by default */
-  position: fixed; /* Stay in place */
-  z-index: 1; /* Sit on top */
-  padding-top: 100px; /* Location of the box */
+  display: none;
+  position: fixed;
+  z-index: 1;
   left: 0;
   top: 0;
-  width: 100%; /* Full width */
-  height: 100%; /* Full height */
-  overflow: auto; /* Enable scroll if needed */
-  background-color: rgb(0,0,0); /* Fallback color */
-  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.4);
 }
 
-/* Modal Content */
 .modal-content {
   background-color: #1f1e1e;
   margin: auto;
   padding: 20px;
   border: 1px solid #888;
   width: 80%;
-  height: auto;
+  max-width: 500px;
+  border-radius: 10px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
 }
 
-/* The Close Button */
 .close {
   color: #aaaaaa;
   float: right;
   font-size: 28px;
   font-weight: bold;
+  cursor: pointer;
 }
 
 .close:hover,
 .close:focus {
   color: #000;
   text-decoration: none;
-  cursor: pointer;
 }
 
 #Success {
   color: rgb(12, 150, 12);
 }
 
-#Success.modal-content {
-  background-color: #1f1e1e;
-  margin: auto;
-  padding: 20px;
-  border: 1px solid #888;
-  width: 80%;
-  height: auto;
-}
-
 #SWError {
   color: red;
 }
 
-#SWError.modal-content {
-  background-color: #1f1e1e;
-  margin: auto;
-  padding: 20px;
-  border: 1px solid #888;
-  width: 80%;
-  height: 100px;
-}
-
-#CreateWorldModal.modal-content {
-  background-color: #1f1e1e;
-  margin: auto;
-  padding: 20px;
-  border: 1px solid #888;
-  width: 80%;
-  height: 100px;
-  display: none;
-}
-
-#CreateWorldModal {
-  color: rgb(1, 62, 243);
-}
-
-button.dismiss_OK {
+button.dismiss_OK, button.confirm {
   background-color: cornflowerblue;
   padding: 10px;
   color: #ffffff;
   font-size: 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button.dismiss_OK:hover, button.confirm:hover {
+  background-color: #3170b7;
 }
 
 .loader {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-}
-
-/* Removed the spin animation */
-
-
-button.confirm {
-  background-color: cornflowerblue;
-  padding: 10px;
-  color: #ffffff;
-  font-size: 15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
 }
 
 #createNW {
-  background-color:grey;
-  padding: 10px;
-  size: 150%;
+  background-color: rgb(145, 145, 145);
+  padding: 15px;
+  font-size: 1.5em;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+#createNW:hover {
+  background-color: rgb(100, 100, 100);
 }
 
 #myForm {
-  display: none; /* Initially hide the form */
-  padding: 10px;
+  display: none;
+  padding: 20px;
+  background-color: #262423;
+  border-radius: 10px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+  margin: 20px auto;
+  width: 60%;
 }
-

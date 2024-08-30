@@ -18,10 +18,10 @@
         <div class="active_servers">
             <h1>Slot 1</h1>
             <p id="activeWorld1"></p>
-            <p>IP: 172.29.156.230</p>
+            <p>IP: 172.29.156.230:25565</p>
+            <button class="arrowButton" id="1" onclick="playSound()">Activate</button>
         </div>
         <div>
-            <button class="arrowButton" id="1" onclick="playSound()">&larr;</button>
         </div>
     </div>
 
@@ -29,10 +29,10 @@
         <div class="active_servers">
             <h1>Slot 2</h1>
             <p id="activeWorld2"></p>
-            <p>IP: Not sure yet</p>
+            <p>IP: 172.29.156.230:25566</p>
+            <button class="arrowButton" id="2" onclick="playSound()">Activate</button>
         </div>
         <div>
-            <button class="arrowButton" id="2" onclick="playSound()">&larr;</button>
         </div>
     </div>
 
@@ -42,6 +42,7 @@
             <div id="buttonContainer">
                 <!-- Buttons will be appended here by JavaScript -->
             </div>
+            <button id="createNW" onclick="playSound()">Create New World</button>
         </div>
     </div>
     
@@ -67,7 +68,6 @@
       </div>
 
     <!-- CreateNew World inside modal-->
-    <button id="createNW" onclick="playSound()">Create New World</button>
     <div id="CreateWorldModal" class="modal">
         <!-- Modal content -->
         <div class="modal-content">
@@ -112,7 +112,7 @@
           }
         }
 
-        function waitForTimingReset(slot) {
+        function waitForTimingReset(worldName, slot) {
           try {
             fetch(`http://localhost:8080/wait-for-timing-reset?slot=${slot}`)
               .then(response => {
@@ -124,7 +124,14 @@
                   successSound.play();
                   netherPortalAmbient.pause(); // Stop the ambient sound
                   netherPortalAmbient.currentTime = 0; // Reset the sound
-                  activeWorld1.innerText = `${worldName}`;
+                  
+                  if (slot == 1) {
+                    activeWorld1.innerText = `${worldName}`;
+                  } 
+                  else if (slot == 2) {
+                    activeWorld2.innerText = `${worldName}`;
+                  }
+                  
                   console.log('timing reset!!');
                 }
               });
@@ -140,6 +147,7 @@
         var netherPortalAmbient = new Audio('./Nether_portal_ambient.mp3');
         netherPortalAmbient.loop = true;
         netherPortalAmbient.volume = 0.3; // set to 30 % max volume
+        errorSound.volume = 0.4;
 
         function playSound() {
             buttonClickSound.play();
@@ -247,9 +255,6 @@
             playSound();
             errorModal.style.display = "none";
         }
-        
-
-
 
         confirmButton.onclick = function () {
             flintSteel.play();
@@ -259,7 +264,7 @@
             netherPortalAmbient.play(); // Start playing the ambient sound
             const world = getActiveButtonWorld();
             startWorldInSlot(world, slot);
-            waitForTimingReset(slot);
+            waitForTimingReset(world, slot);
             successCap.innerText = 'Loading your world...';
         }
     
