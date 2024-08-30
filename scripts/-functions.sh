@@ -580,6 +580,108 @@ mc_service_slot_enable() {
   echo
 }
 
+# Function: mc_service_slot_is_active
+# Description: Check if the service slot is active
+# Parameters:
+# - $1: the slot number, if not set, use the default
+#
+mc_service_slot_is_active() {
+  SERVER_SLOT=$(mc_service_slot_get_or_default $1)
+  SERVICE_NAME=$(mc_service_slot_name_get $SERVER_SLOT)
+
+  if systemctl is-active --quiet $SERVICE_NAME; then
+      echo "true"
+  else
+      echo "false"
+  fi
+}
+
+# Function: mc_service_slot_last_line_status_get
+# Description: Get the last line status for the specified slot
+# Parameters:
+# - $1: the slot number, if not set, use the default
+#
+mc_service_slot_last_line_status_get() {
+  SERVER_SLOT=$(mc_service_slot_get_or_default $1)
+  STATUS=$(mc_service_slot_check $SLOT)
+  echo "$STATUS" | tail -n 1
+}
+
+# Function: mc_service_slot_last_line_json_get
+# Description: Get the last line status in "json" format for the specified slot
+# Parameters:
+# - $1: the slot number, if not set, use the default
+#
+mc_service_slot_last_line_json_get() {
+  SERVER_SLOT=$(mc_service_slot_get_or_default $1)
+  STATUS=$(mc_service_slot_last_line_status_get $SLOT)
+  echo $STATUS | sed 's/\\/\\\\/g' | sed 's/"/\\"/g' | sed "s/'/\\'/g" | sed 's/\//\\\//g' | sed 's/\n/\\n/g' | sed 's/\r/\\r/g' | sed 's/\t/\\t/g'
+}
+
+# Function: mc_service_slot_world_name_fq_filename_get_or_default
+# Description: Get the slot world name fq filename for the specified slot
+# Parameters:
+# - $1: the slot number, if not set, use the default
+#
+mc_service_slot_world_name_fq_filename_get_or_default() {
+  SERVER_SLOT=$(mc_service_slot_get_or_default $1)
+  echo "$(mc_global_fq_dir_get)/slot-$SERVER_SLOT-world-name.txt"
+}
+
+# Function: mc_service_slot_world_name_get_or_default
+# Description: Get the slot world name for the specified slot
+# Parameters:
+# - $1: the slot number, if not set, use the default
+#
+mc_service_slot_world_name_get_or_default() {
+  SLOT_WORLD_NAME_FILE=$(mc_service_slot_world_name_fq_filename_get_or_default $1)
+  if [ -f $SLOT_WORLD_NAME_FILE ]; then
+    cat $SLOT_WORLD_NAME_FILE
+  else
+    echo $(mc_world_name_get_or_default)
+  fi
+}
+
+# Function: mc_service_slot_world_name_set
+# Description: Set the slot world name for the specified slot
+# Parameters:
+# - $1: the slot number, if not set, use the default
+# - $2: the world name
+#
+mc_service_slot_world_name_set() {
+  SLOT_WORLD_NAME_FILE=$(mc_service_slot_world_name_fq_filename_get_or_default $1)
+  mc_global_ensure_dir_exists $(dirname $SLOT_WORLD_NAME_FILE)
+  echo $2 > $SLOT_WORLD_NAME_FILE
+  cat $SLOT_WORLD_NAME_FILE
+}
+
+# Function: mc_service_slot_json_get
+# Description: Get the service slots in "json" format
+# Parameters: None
+#
+mc_service_slot_json_get() {
+  echo "["
+  FIRST=true
+  for SLOT in {1..9}; do
+    SERVICE_FQ_FILE_NAME=$(mc_service_slot_fq_filename_get $SLOT)
+    if [ ! -f $SERVICE_FQ_FILE_NAME ]; then
+      continue
+    fi
+    if [ "$FIRST" = true ]; then
+      FIRST=false
+    else
+      echo ","
+    fi
+    echo "  {"
+    echo "    \"Slot\": $SLOT,"
+    echo "    \"Active\": $(mc_service_slot_is_active $SLOT),"
+    echo "    \"Name\": \"$(mc_service_slot_world_name_get_or_default $SLOT)\""
+    echo "    \"Status\": \"$(mc_service_slot_last_line_json_get $SLOT)\""
+    echo "  }"
+  done
+  echo "]"
+}
+
 # Function: mc_world_service_slot_file_content_get
 # Description: Get the service file content for the specified world and slot
 # Parameters:
@@ -707,6 +809,9 @@ mc_world_start_in_slot() {
   # update the server properties file
   mc_world_server_properties_update $WORLD $SERVER_SLOT
 
+  # update the slot world name
+  mc_service_slot_world_name_set $SERVER_SLOT $WORLD
+
   # create the new service file
   echo "Updating service for world: $WORLD, slot: $SERVER_SLOT ..."
   _=$(mc_world_service_slot_file_create $WORLD $SERVER_SLOT)
@@ -723,12 +828,12 @@ mc_world_start_in_slot() {
   mc_service_slot_start $SERVER_SLOT
 }
 
-# Function: mc_check_service_slot
+# Function: mc_service_slot_check
 # Description: Check the status of the specified service slot
 # Parameters:
 # - $1: the slot number, if not set, use the default
 #
-mc_check_service_slot() {
+mc_service_slot_check() {
   SERVER_SLOT=$(mc_service_slot_get_or_default $1)
   SERVICE_NAME=$(mc_service_slot_name_get $SERVER_SLOT)
 
@@ -816,6 +921,11 @@ mc_test_world_get_functions() {
 mc_test_service_slot_get_functions() {
   echo mc_service_slot_get_or_default=$(mc_service_slot_get_or_default $1)
   echo mc_service_slot_name_get=$(mc_service_slot_name_get $1)
+  echo mc_service_slot_fq_filename_get=$(mc_service_slot_fq_filename_get $1)
+  echo mc_service_slot_is_active=$(mc_service_slot_is_active $1)
+  echo mc_service_slot_last_line_status_get=$(mc_service_slot_last_line_status_get $1)
+  echo mc_service_slot_world_name_fq_filename_get_or_default=$(mc_service_slot_world_name_fq_filename_get_or_default $1)
+  echo mc_service_slot_world_name_get_or_default=$(mc_service_slot_world_name_get_or_default $1)
 }
 
 # Function: mc_test_paper_get_version_and_build_functions
