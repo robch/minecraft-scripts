@@ -580,6 +580,44 @@ mc_service_slot_enable() {
   echo
 }
 
+# Function: mc_service_slot_is_active
+# Description: Check if the service slot is active
+# Parameters:
+# - $1: the slot number, if not set, use the default
+#
+mc_service_slot_is_active() {
+  SERVER_SLOT=$(mc_service_slot_get_or_default $1)
+  SERVICE_NAME=$(mc_service_slot_name_get $SERVER_SLOT)
+
+  if systemctl is-active --quiet $SERVICE_NAME; then
+      echo "true"
+  else
+      echo "false"
+  fi
+}
+
+# Function: mc_service_slot_last_line_status_get
+# Description: Get the last line status for the specified slot
+# Parameters:
+# - $1: the slot number, if not set, use the default
+#
+mc_service_slot_last_line_status_get() {
+  SERVER_SLOT=$(mc_service_slot_get_or_default $1)
+  STATUS=$(mc_service_slot_check $SLOT)
+  echo "$STATUS" | tail -n 1
+}
+
+# Function: mc_service_slot_last_line_json_get
+# Description: Get the last line status in "json" format for the specified slot
+# Parameters:
+# - $1: the slot number, if not set, use the default
+#
+mc_service_slot_last_line_json_get() {
+  SERVER_SLOT=$(mc_service_slot_get_or_default $1)
+  STATUS=$(mc_service_slot_last_line_status_get $SLOT)
+  echo $STATUS | sed 's/\\/\\\\/g' | sed 's/"/\\"/g' | sed "s/'/\\'/g" | sed 's/\//\\\//g' | sed 's/\n/\\n/g' | sed 's/\r/\\r/g' | sed 's/\t/\\t/g'
+}
+
 # Function: mc_service_slot_world_name_fq_filename_get_or_default
 # Description: Get the slot world name fq filename for the specified slot
 # Parameters:
@@ -636,7 +674,9 @@ mc_service_slot_json_get() {
     fi
     echo "  {"
     echo "    \"Slot\": $SLOT,"
+    echo "    \"Active\": $(mc_service_slot_is_active $SLOT),"
     echo "    \"Name\": \"$(mc_service_slot_world_name_get_or_default $SLOT)\""
+    echo "    \"Status\": \"$(mc_service_slot_last_line_json_get $SLOT)\""
     echo "  }"
   done
   echo "]"
@@ -882,6 +922,8 @@ mc_test_service_slot_get_functions() {
   echo mc_service_slot_get_or_default=$(mc_service_slot_get_or_default $1)
   echo mc_service_slot_name_get=$(mc_service_slot_name_get $1)
   echo mc_service_slot_fq_filename_get=$(mc_service_slot_fq_filename_get $1)
+  echo mc_service_slot_is_active=$(mc_service_slot_is_active $1)
+  echo mc_service_slot_last_line_status_get=$(mc_service_slot_last_line_status_get $1)
   echo mc_service_slot_world_name_fq_filename_get_or_default=$(mc_service_slot_world_name_fq_filename_get_or_default $1)
   echo mc_service_slot_world_name_get_or_default=$(mc_service_slot_world_name_get_or_default $1)
 }
