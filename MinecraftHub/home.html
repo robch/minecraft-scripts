@@ -119,20 +119,13 @@
                 if (!response.ok) {
                   throw new Error('Network response was not ok');
                 } else {
-                  hideLoader();
-                  successCap.innerText = 'Success! Your world has been loaded!'
-                  successSound.play();
-                  netherPortalAmbient.pause(); // Stop the ambient sound
-                  netherPortalAmbient.currentTime = 0; // Reset the sound
-                  
-                  if (slot == 1) {
-                    activeWorld1.innerText = `${worldName}`;
-                  } 
-                  else if (slot == 2) {
-                    activeWorld2.innerText = `${worldName}`;
-                  }
-                  
-                  console.log('timing reset!!');
+                    hideLoader();
+                    successCap.innerText = 'Success! Your world has been loaded!'
+                    successSound.play();
+                    netherPortalAmbient.pause(); // Stop the ambient sound
+                    netherPortalAmbient.currentTime = 0; // Reset the sound
+                    loadActiveWorlds();
+                    console.log('timing reset!!');
                 }
               });
           } catch (error) {

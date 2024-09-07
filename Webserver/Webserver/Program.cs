@@ -285,7 +285,7 @@ class Program
 
     private static void WaitForTimingReset(string slot)
     {
-        string command = $"/mnt/c/src/minecraft-scripts/scripts/91-wait-for-timing-reset.sh \"{slot}\"";
+        string command = $"/mnt/c/src/minecraft-scripts/scripts/91-wait-for-timings-reset.sh \"{slot}\"";
         var process = new Process
         {
             StartInfo = new ProcessStartInfo
