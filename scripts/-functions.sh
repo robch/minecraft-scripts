@@ -675,7 +675,7 @@ mc_service_slot_json_get() {
     echo "  {"
     echo "    \"Slot\": $SLOT,"
     echo "    \"Active\": $(mc_service_slot_is_active $SLOT),"
-    echo "    \"Name\": \"$(mc_service_slot_world_name_get_or_default $SLOT)\""
+    echo "    \"Name\": \"$(mc_service_slot_world_name_get_or_default $SLOT)\","
     echo "    \"Status\": \"$(mc_service_slot_last_line_json_get $SLOT)\""
     echo "  }"
   done

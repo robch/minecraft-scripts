@@ -182,6 +182,7 @@
                     var btn = document.createElement("BUTTON");
                     btn.className = "myButton";
                     btn.innerHTML = `${world.Name}`;
+                    btn.id = `${world.Name}`;
                     btn.addEventListener("click", function() {
                         playSound(); // Play sound on button click
                         if (this.classList.contains("active")) {
@@ -201,8 +202,42 @@
                 console.error('Fetching error:', error);
             });
         }
-    
+
+        function loadActiveWorlds() {
+    var activeWorld1 = document.getElementById("activeWorld1");
+    var activeWorld2 = document.getElementById("activeWorld2");
+
+    fetch('http://localhost:8080/active-worlds')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(slots => {
+            var buttons = document.getElementsByClassName("myButton");
+            slots.forEach(slot => {
+
+                Array.from(buttons).forEach(btn => {
+                    if (btn.innerHTML === slot.Name) {
+                        btn.style.backgroundColor = "purple";
+                    }
+                });
+
+                if (slot.Slot === 1) {
+                    activeWorld1.innerText = `${slot.Name} ${slot.Active}`;
+                } else if (slot.Slot === 2) {
+                    activeWorld2.innerText = `${slot.Name} ${slot.Active}`;
+                }
+            });
+        })
+        .catch(error => {
+            console.error('Fetching error:', error);
+        });
+        }
+
         loadWorldButtons();
+        loadActiveWorlds();
 
         var abtns = document.getElementsByClassName("arrowButton");
         var errorModal = document.getElementById("SWError");
@@ -502,6 +537,7 @@ document.getElementById("createNW").addEventListener("click", function() {
       const result = await response.text();
       console.log(result); // World creation status
       loadWorldButtons(); // Refresh the world buttons
+      loadActiveWorlds();
       loader.style.display = "none"; // Hide the loader after the request completes
       successSound.play();
     } else {

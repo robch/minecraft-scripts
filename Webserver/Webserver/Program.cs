@@ -131,6 +131,13 @@ class Program
             context.Response.ContentLength64 = buffer.Length;
             context.Response.OutputStream.Write(buffer, 0, buffer.Length);
         }
+        else if (method == "GET" && path == "/active-worlds")
+        {
+            string json = ListActiveWorlds();
+            byte[] buffer = Encoding.UTF8.GetBytes(json);
+            context.Response.ContentLength64 = buffer.Length;
+            context.Response.OutputStream.Write(buffer, 0, buffer.Length);
+        }
         else
         {
             context.Response.StatusCode = (int)HttpStatusCode.NotFound;
@@ -166,6 +173,36 @@ class Program
         string output = process.StandardOutput.ReadToEnd();
         string errors = process.StandardError.ReadToEnd();
 
+        process.WaitForExit();
+        if (!string.IsNullOrEmpty(errors))
+        {
+            Console.WriteLine("ERROR: " + errors);
+        }
+        else
+        {
+            Console.WriteLine("SUCCESS: " + output);
+        }
+        return output;
+    }
+
+    private static string ListActiveWorlds()
+    {
+        var process = new Process
+        {
+            StartInfo = new ProcessStartInfo
+            {
+                FileName = "wsl.exe",
+                Arguments = "-e /mnt/c/src/minecraft-scripts/scripts/71-get-service-json.sh",
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+            }
+        };
+
+        process.Start();
+        string output = process.StandardOutput.ReadToEnd();
+        string errors = process.StandardError.ReadToEnd();
         process.WaitForExit();
         if (!string.IsNullOrEmpty(errors))
         {
@@ -222,7 +259,7 @@ class Program
             StartInfo = new ProcessStartInfo
             {
                 FileName = "wsl.exe",
-                Arguments = $"-u root -e {command}",
+                Arguments = $"-e {command}",
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
@@ -237,26 +274,24 @@ class Program
 
         if (!string.IsNullOrEmpty(error))
         {
-            Console.WriteLine("Error while creating world: " + error);
+            Console.WriteLine("Error while starting world: " + error);
             Console.WriteLine(output);
         }
         else
         {
-            Console.WriteLine("World created successfully: " + output);
+            Console.WriteLine("World started successfully: " + output);
         }
     }
 
     private static void WaitForTimingReset(string slot)
     {
-        string command = $"/mnt/c/src/minecraft-scripts/scripts/91-wait-for-timings-reset.sh {slot}";
-        Console.WriteLine($"slot: {slot}");
-        Console.WriteLine($"command: {command}");
+        string command = $"/mnt/c/src/minecraft-scripts/scripts/91-wait-for-timing-reset.sh \"{slot}\"";
         var process = new Process
         {
             StartInfo = new ProcessStartInfo
             {
                 FileName = "wsl.exe",
-                Arguments = $"-u root -e {command}",
+                Arguments = $"-e {command}",
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
@@ -271,12 +306,12 @@ class Program
 
         if (!string.IsNullOrEmpty(error))
         {
-            Console.WriteLine("Error waiting for timings reset: " + error);
+            Console.WriteLine("Error while waiting for timings reset: " + error);
             Console.WriteLine(output);
         }
         else
         {
-            Console.WriteLine("Timings Reset: " + output);
+            Console.WriteLine("Timings reset successfully: " + output);
         }
     }
 }
