@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Net;
+using System.Runtime.InteropServices;
 using System.Text;
 
 class Program
@@ -102,25 +103,49 @@ class Program
         }
         else if (method == "GET" && path == "/home.html")
         {
-            string filename = "C:\\src\\minecraft-scripts\\MinecraftHub\\home.html";
+            string? filename = FindFile("MinecraftHub\\home.html");
+            if (filename == null)
+            {
+                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                context.Response.OutputStream.Close();
+                return;
+            }
             context.Response.ContentType = "text/html";
             RespondWithFile(context, filename);
         }
         else if (method == "GET" && path == "/styles.css")
         {
-            string filename = "C:\\src\\minecraft-scripts\\MinecraftHub\\styles.css";
+            string? filename = FindFile("MinecraftHub\\styles.css");
+            if (filename == null)
+            {
+                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                context.Response.OutputStream.Close();
+                return;
+            }
             context.Response.ContentType = "text/css";
             RespondWithFile(context, filename);
         }
         else if (method == "GET" && path == "/fonts/Minecraft.ttf")
         {
-            string filename = "C:\\src\\minecraft-scripts\\MinecraftHub\\fonts\\Minecraft.ttf";
+            string? filename = FindFile("MinecraftHub\\fonts\\Minecraft.ttf");
+            if (filename == null)
+            {
+                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                context.Response.OutputStream.Close();
+                return;
+            }
             context.Response.ContentType = "font/ttf";
             RespondWithFile(context, filename);
         }
         else if (method == "GET" && path == "/fonts/Minecrafter.Reg.ttf")
         {
-            string filename = "C:\\src\\minecraft-scripts\\MinecraftHub\\fonts\\Minecrafter.Reg.ttf";
+            string? filename = FindFile("MinecraftHub\\fonts\\Minecrafter.Reg.ttf");
+            if (filename == null)
+            {
+                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                context.Response.OutputStream.Close();
+                return;
+            }
             context.Response.ContentType = "font/ttf";
             RespondWithFile(context, filename);
         }
@@ -156,12 +181,19 @@ class Program
 
     private static string ListWorlds()
     {
+        var filename = FindLinuxFile("scripts/06-get-worlds-json.sh");
+        if (filename == null)
+        {
+            Console.WriteLine("ERROR: Could not find script to list worlds.");
+            return "[]";
+        }
+
         var process = new Process
         {
             StartInfo = new ProcessStartInfo
             {
                 FileName = "wsl.exe",
-                Arguments = "-e /mnt/c/src/minecraft-scripts/scripts/06-get-worlds-json.sh",
+                Arguments = $"-e {filename}",
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
@@ -187,12 +219,19 @@ class Program
 
     private static string ListActiveWorlds()
     {
+        var filename = FindLinuxFile("scripts/71-get-service-json.sh");
+        if (filename == null)
+        {
+            Console.WriteLine("ERROR: Could not find script to list active worlds.");
+            return "[]";
+        }
+
         var process = new Process
         {
             StartInfo = new ProcessStartInfo
             {
                 FileName = "wsl.exe",
-                Arguments = "-e /mnt/c/src/minecraft-scripts/scripts/71-get-service-json.sh",
+                Arguments = $"-e {filename}",
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
@@ -217,6 +256,13 @@ class Program
 
     private static void CreateWorld(string worldName, string worldDescription)
     {
+        var filename = FindLinuxFile("scripts/80-create-minecraft-world.sh");
+        if (filename == null)
+        {
+            Console.WriteLine("ERROR: Could not find script to create world.");
+            return;
+        }
+
         Console.WriteLine($"world_name: {worldName}");
         Console.WriteLine($"world_description: {worldDescription}");
         var process = new Process
@@ -224,7 +270,7 @@ class Program
             StartInfo = new ProcessStartInfo
             {
                 FileName = "wsl.exe",
-                Arguments = $"-e /mnt/c/src/minecraft-scripts/scripts/80-create-minecraft-world.sh {worldName} \"{worldDescription}\"",
+                Arguments = $"-e {filename} {worldName} \"{worldDescription}\"",
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
@@ -250,10 +296,18 @@ class Program
 
     private static void StartWorldInSlot(string? worldName, string? slot)
     {
-        string command = $"/mnt/c/src/minecraft-scripts/scripts/90-start-world-in-slot.sh \"{worldName}\" \"{slot}\"";
+        var filename = FindLinuxFile("scripts/90-start-world-in-slot.sh");
+        if (filename == null)
+        {
+            Console.WriteLine("ERROR: Could not find script to start world.");
+            return;
+        }
+
+        string command = $"{filename} \"{worldName}\" \"{slot}\"";
         Console.WriteLine($"world_name: {worldName}");
         Console.WriteLine($"slot: {slot}");
         Console.WriteLine($"command: {command}");
+
         var process = new Process
         {
             StartInfo = new ProcessStartInfo
@@ -285,7 +339,14 @@ class Program
 
     private static void WaitForTimingReset(string slot)
     {
-        string command = $"/mnt/c/src/minecraft-scripts/scripts/91-wait-for-timings-reset.sh \"{slot}\"";
+        var filename = FindLinuxFile("scripts/91-wait-for-timings-reset.sh");
+        if (filename == null)
+        {
+            Console.WriteLine("ERROR: Could not find script to wait for timings reset.");
+            return;
+        }
+
+        string command = $"{filename} \"{slot}\"";
         var process = new Process
         {
             StartInfo = new ProcessStartInfo
@@ -313,5 +374,51 @@ class Program
         {
             Console.WriteLine("Timings reset successfully: " + output);
         }
+    }
+
+    private static string? FindFile(string filename)
+    {
+        // Check if the file exists in the current directory or any parent directory
+
+        // start from the current directory
+        string? directory = Directory.GetCurrentDirectory();
+        while (!string.IsNullOrEmpty(directory))
+        {
+            // check if the file exists in the current directory
+            string check = Path.Combine(directory, filename);
+            if (File.Exists(check))
+            {
+                // if the file exists, return the full path
+                Console.WriteLine($"Found file: {check}");
+                return check;
+            }
+
+            // move to the parent directory
+            directory = Path.GetDirectoryName(directory);
+        }
+
+        // if the file was not found in any parent directory, return null
+        Console.WriteLine($"Could not find file: {filename}");
+        return null;
+    }
+
+    private static string? FindLinuxFile(string filename)
+    {
+        // find the file in the current directory or any parent directory
+        string? found = FindFile(filename);
+
+        // if the file was found and we are running on Windows, convert the path to a WSL path
+        if (found != null && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            // pull out the drive letter and the rest of the path
+            string driveLetter = found[0].ToString().ToLower();
+            string path = found.Substring(3).Replace("\\", "/");
+
+            // convert the path to a WSL path
+            found = $"/mnt/{driveLetter}/{path}";
+            Console.WriteLine($"WSL path: {found}");
+        }
+
+        return found;
     }
 }
