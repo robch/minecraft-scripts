@@ -103,7 +103,7 @@ class Program
         }
         else if (method == "GET" && path == "/home.html")
         {
-            string? filename = FindFile("MinecraftHub\\home.html");
+            string? filename = FindFile("MinecraftHub/home.html");
             if (filename == null)
             {
                 context.Response.StatusCode = (int)HttpStatusCode.NotFound;
@@ -115,7 +115,7 @@ class Program
         }
         else if (method == "GET" && path == "/styles.css")
         {
-            string? filename = FindFile("MinecraftHub\\styles.css");
+            string? filename = FindFile("MinecraftHub/styles.css");
             if (filename == null)
             {
                 context.Response.StatusCode = (int)HttpStatusCode.NotFound;
@@ -127,7 +127,7 @@ class Program
         }
         else if (method == "GET" && path == "/fonts/Minecraft.ttf")
         {
-            string? filename = FindFile("MinecraftHub\\fonts\\Minecraft.ttf");
+            string? filename = FindFile("MinecraftHub/fonts/Minecraft.ttf");
             if (filename == null)
             {
                 context.Response.StatusCode = (int)HttpStatusCode.NotFound;
@@ -139,7 +139,7 @@ class Program
         }
         else if (method == "GET" && path == "/fonts/Minecrafter.Reg.ttf")
         {
-            string? filename = FindFile("MinecraftHub\\fonts\\Minecrafter.Reg.ttf");
+            string? filename = FindFile("MinecraftHub/fonts/Minecrafter.Reg.ttf");
             if (filename == null)
             {
                 context.Response.StatusCode = (int)HttpStatusCode.NotFound;
