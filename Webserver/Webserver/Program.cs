@@ -378,30 +378,43 @@ class Program
 
     private static string? FindFile(string filename)
     {
+        // Check if the file exists in the current directory or any parent directory
+
+        // start from the current directory
         string? directory = Directory.GetCurrentDirectory();
         while (!string.IsNullOrEmpty(directory))
         {
+            // check if the file exists in the current directory
             string check = Path.Combine(directory, filename);
             if (File.Exists(check))
             {
+                // if the file exists, return the full path
                 Console.WriteLine($"Found file: {check}");
                 return check;
             }
 
+            // move to the parent directory
             directory = Path.GetDirectoryName(directory);
         }
 
+        // if the file was not found in any parent directory, return null
         Console.WriteLine($"Could not find file: {filename}");
         return null;
     }
 
     private static string? FindLinuxFile(string filename)
     {
+        // find the file in the current directory or any parent directory
         string? found = FindFile(filename);
+
+        // if the file was found and we are running on Windows, convert the path to a WSL path
         if (found != null && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
+            // pull out the drive letter and the rest of the path
             string driveLetter = found[0].ToString().ToLower();
             string path = found.Substring(3).Replace("\\", "/");
+
+            // convert the path to a WSL path
             found = $"/mnt/{driveLetter}/{path}";
             Console.WriteLine($"WSL path: {found}");
         }
