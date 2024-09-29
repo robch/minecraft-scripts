@@ -36,7 +36,7 @@ class Program
         context.Response.AddHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
         context.Response.AddHeader("Access-Control-Allow-Headers", "Content-Type");
 
-        Console.WriteLine($"Received {method} request for {path}");
+        Console.WriteLine($"\nReceived {method} request for {path}");
 
         context.Response.ContentType = "application/json";
 
@@ -103,7 +103,7 @@ class Program
         }
         else if (method == "GET" && path == "/home.html")
         {
-            string? filename = FindFile("MinecraftHub\\home.html");
+            string? filename = FindFile("MinecraftHub/home.html");
             if (filename == null)
             {
                 context.Response.StatusCode = (int)HttpStatusCode.NotFound;
@@ -115,7 +115,7 @@ class Program
         }
         else if (method == "GET" && path == "/styles.css")
         {
-            string? filename = FindFile("MinecraftHub\\styles.css");
+            string? filename = FindFile("MinecraftHub/styles.css");
             if (filename == null)
             {
                 context.Response.StatusCode = (int)HttpStatusCode.NotFound;
@@ -127,7 +127,7 @@ class Program
         }
         else if (method == "GET" && path == "/fonts/Minecraft.ttf")
         {
-            string? filename = FindFile("MinecraftHub\\fonts\\Minecraft.ttf");
+            string? filename = FindFile("MinecraftHub/fonts/Minecraft.ttf");
             if (filename == null)
             {
                 context.Response.StatusCode = (int)HttpStatusCode.NotFound;
@@ -139,7 +139,7 @@ class Program
         }
         else if (method == "GET" && path == "/fonts/Minecrafter.Reg.ttf")
         {
-            string? filename = FindFile("MinecraftHub\\fonts\\Minecrafter.Reg.ttf");
+            string? filename = FindFile("MinecraftHub/fonts/Minecrafter.Reg.ttf");
             if (filename == null)
             {
                 context.Response.StatusCode = (int)HttpStatusCode.NotFound;
@@ -188,12 +188,17 @@ class Program
             return "[]";
         }
 
+        var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
         var process = new Process
         {
             StartInfo = new ProcessStartInfo
             {
-                FileName = "wsl.exe",
-                Arguments = $"-e {filename}",
+                FileName = isWindows
+                    ? "wsl.exe"
+                    : "/bin/bash",
+                Arguments = isWindows
+                    ? $"-e \"{filename}\""
+                    : $"-c \"{filename}\"",
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
@@ -226,12 +231,17 @@ class Program
             return "[]";
         }
 
+        var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
         var process = new Process
         {
             StartInfo = new ProcessStartInfo
             {
-                FileName = "wsl.exe",
-                Arguments = $"-e {filename}",
+                FileName = isWindows
+                    ? "wsl.exe"
+                    : "/bin/bash",
+                Arguments = isWindows
+                    ? $"-e \"{filename}\""
+                    : $"-c \"{filename}\"",
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
@@ -265,12 +275,18 @@ class Program
 
         Console.WriteLine($"world_name: {worldName}");
         Console.WriteLine($"world_description: {worldDescription}");
+
+        var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
         var process = new Process
         {
             StartInfo = new ProcessStartInfo
             {
-                FileName = "wsl.exe",
-                Arguments = $"-e {filename} {worldName} \"{worldDescription}\"",
+                FileName = isWindows
+                    ? "wsl.exe"
+                    : "/bin/bash",
+                Arguments = isWindows
+                    ? $"-e \"{filename}\" \"{worldName}\" \"{worldDescription}\""
+                    : $"-c \"{filename} '{worldName}' '{worldDescription}'\"",
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
@@ -303,17 +319,20 @@ class Program
             return;
         }
 
-        string command = $"{filename} \"{worldName}\" \"{slot}\"";
         Console.WriteLine($"world_name: {worldName}");
         Console.WriteLine($"slot: {slot}");
-        Console.WriteLine($"command: {command}");
 
+        var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
         var process = new Process
         {
             StartInfo = new ProcessStartInfo
             {
-                FileName = "wsl.exe",
-                Arguments = $"-e {command}",
+                FileName = isWindows
+                    ? "wsl.exe"
+                    : "/bin/bash",
+                Arguments = isWindows
+                    ? $"-e \"{filename}\" \"{worldName}\" \"{slot}\""
+                    : $"-c \"{filename} '{worldName}' '{slot}'\"",
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
@@ -346,13 +365,17 @@ class Program
             return;
         }
 
-        string command = $"{filename} \"{slot}\"";
+        var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
         var process = new Process
         {
             StartInfo = new ProcessStartInfo
             {
-                FileName = "wsl.exe",
-                Arguments = $"-e {command}",
+                FileName = isWindows
+                    ? "wsl.exe"
+                    : "/bin/bash",
+                Arguments = isWindows
+                    ? $"-e \"{filename}\" \"{slot}\""
+                    : $"-c \"{filename} '{slot}'\"",
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
