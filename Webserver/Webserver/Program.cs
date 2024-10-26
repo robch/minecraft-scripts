@@ -25,11 +25,11 @@ class Program
         while (true)
         {
             HttpListenerContext context = listener.GetContext();
-            HandleRequest(context);
+            Task.Run(() => HandleRequest(context));
         }
     }
 
-    static void HandleRequest(HttpListenerContext context)
+    static async Task HandleRequest(HttpListenerContext context)
     {
         string method = context.Request.HttpMethod;
         string path = context.Request.Url.AbsolutePath;
