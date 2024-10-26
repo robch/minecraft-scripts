@@ -7,4 +7,4 @@
 #
 
 source $(dirname $0)/-functions.sh
-mc_world_update_description $1 "$2"
+mc_world_update_description "$1" "$2"
