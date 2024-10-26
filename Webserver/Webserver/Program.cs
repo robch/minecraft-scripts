@@ -138,7 +138,7 @@ class Program
                 return;
             }
             context.Response.ContentType = "text/html";
-            RespondWithFile(context, filename);
+            RespondWithTextFile(context, filename);
         }
         else if (method == "GET" && path == "/styles.css")
         {
@@ -150,7 +150,7 @@ class Program
                 return;
             }
             context.Response.ContentType = "text/css";
-            RespondWithFile(context, filename);
+            RespondWithTextFile(context, filename);
         }
         else if (method == "GET" && path == "/fonts/Minecraft.ttf")
         {
@@ -162,7 +162,7 @@ class Program
                 return;
             }
             context.Response.ContentType = "font/ttf";
-            RespondWithFile(context, filename);
+            RespondWithBinaryFile(context, filename);
         }
         else if (method == "GET" && path == "/fonts/Minecrafter.Reg.ttf")
         {
@@ -174,7 +174,79 @@ class Program
                 return;
             }
             context.Response.ContentType = "font/ttf";
-            RespondWithFile(context, filename);
+            RespondWithBinaryFile(context, filename);
+        }
+        else if (method == "GET" && path == "/Random_break.mp3")
+        {
+            string? filename = FindFile("MinecraftHub/Random_break.mp3");
+            if (filename == null)
+            {
+                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                context.Response.OutputStream.Close();
+                return;
+            }
+            context.Response.ContentType = "audio/mpeg";
+            RespondWithBinaryFile(context, filename);
+        }
+        else if (method == "GET" && path == "/Successful_hit.mp3")
+        {
+            string? filename = FindFile("MinecraftHub/Successful_hit.mp3");
+            if (filename == null)
+            {
+                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                context.Response.OutputStream.Close();
+                return;
+            }
+            context.Response.ContentType = "audio/mpeg";
+            RespondWithBinaryFile(context, filename);
+        }
+        else if (method == "GET" && path == "/minecraft-click-cropped.mp3")
+        {
+            string? filename = FindFile("MinecraftHub/minecraft-click-cropped.mp3");
+            if (filename == null)
+            {
+                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                context.Response.OutputStream.Close();
+                return;
+            }
+            context.Response.ContentType = "audio/mpeg";
+            RespondWithBinaryFile(context, filename);
+        }
+        else if (method == "GET" && path == "/Flint_and_steel_click.mp3")
+        {
+            string? filename = FindFile("MinecraftHub/Flint_and_steel_click.mp3");
+            if (filename == null)
+            {
+                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                context.Response.OutputStream.Close();
+                return;
+            }
+            context.Response.ContentType = "audio/mpeg";
+            RespondWithBinaryFile(context, filename);
+        }
+        else if (method == "GET" && path == "/Nether_portal_ambient.mp3")
+        {
+            string? filename = FindFile("MinecraftHub/Nether_portal_ambient.mp3");
+            if (filename == null)
+            {
+                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                context.Response.OutputStream.Close();
+                return;
+            }
+            context.Response.ContentType = "audio/mpeg";
+            RespondWithBinaryFile(context, filename);
+        }
+        else if (method == "GET" && path == "/images/Lime_Concrete.webp")
+        {
+            string? filename = FindFile("MinecraftHub/images/Lime_Concrete.webp");
+            if (filename == null)
+            {
+                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                context.Response.OutputStream.Close();
+                return;
+            }
+            context.Response.ContentType = "image/webp";
+            RespondWithBinaryFile(context, filename);
         }
         else if (method == "GET" && path == "/worlds")
         {
@@ -209,7 +281,7 @@ class Program
         context.Response.OutputStream.Close();
     }
 
-    private static void RespondWithFile(HttpListenerContext context, string filename)
+    private static void RespondWithTextFile(HttpListenerContext context, string filename)
     {
         Console.ForegroundColor = ConsoleColor.Green;
         Console.WriteLine($"Responding with file: {filename}");
@@ -217,6 +289,17 @@ class Program
 
         string response = File.ReadAllText(filename);
         byte[] buffer = Encoding.UTF8.GetBytes(response);
+        context.Response.ContentLength64 = buffer.Length;
+        context.Response.OutputStream.Write(buffer, 0, buffer.Length);
+    }
+
+    private static void RespondWithBinaryFile(HttpListenerContext context, string filename)
+    {
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine($"Responding with file: {filename}");
+        Console.ForegroundColor = ConsoleColor.Gray;
+
+        byte[] buffer = File.ReadAllBytes(filename);
         context.Response.ContentLength64 = buffer.Length;
         context.Response.OutputStream.Write(buffer, 0, buffer.Length);
     }
