@@ -15,11 +15,12 @@ class Program
 
     static void Main()
     {
+        const string url = "http://localhost:8080/";
         HttpListener listener = new HttpListener();
-        listener.Prefixes.Add("http://localhost:8080/");
+        listener.Prefixes.Add(url);
         listener.Start();
 
-        Console.WriteLine("Server started. Listening for requests...");
+        Console.WriteLine($"Server started. Listening for requests on {url}");
 
         while (true)
         {
@@ -36,7 +37,9 @@ class Program
         context.Response.AddHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
         context.Response.AddHeader("Access-Control-Allow-Headers", "Content-Type");
 
+        Console.ForegroundColor = ConsoleColor.DarkGreen;
         Console.WriteLine($"\nReceived {method} request for {path}");
+        Console.ForegroundColor = ConsoleColor.Gray;
 
         context.Response.ContentType = "application/json";
 
@@ -48,6 +51,10 @@ class Program
         }
         else if (method == "GET" && path == "/")
         {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("Hello, world!");
+            Console.ForegroundColor = ConsoleColor.Gray;
+
             string response = "Hello, world!";
             byte[] buffer = Encoding.UTF8.GetBytes(response);
             context.Response.ContentLength64 = buffer.Length;
@@ -55,6 +62,10 @@ class Program
         }
         else if (method == "POST" && path == "/create-world")
         {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("Creating a new world...");
+            Console.ForegroundColor = ConsoleColor.Gray;
+
             // Handle POST request to create a new world
             using (var reader = new StreamReader(context.Request.InputStream, context.Request.ContentEncoding))
             {
@@ -76,6 +87,10 @@ class Program
         }
         else if (method == "GET" && path == "/load-world")
         {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("Loading a world...");
+            Console.ForegroundColor = ConsoleColor.Gray;
+
             string worldName = context.Request.QueryString["name"] ?? "World1";
             string slot = context.Request.QueryString["slot"] ?? "1";
 
@@ -90,6 +105,10 @@ class Program
         }
         else if (method == "GET" && path == "/wait-for-timing-reset")
         {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("Waiting for timings reset...");
+            Console.ForegroundColor = ConsoleColor.Gray;
+
             string slot = context.Request.QueryString["slot"] ?? "1";
 
             // Execute the shell command to load the world into the slot specified
@@ -100,9 +119,17 @@ class Program
             byte[] buffer = Encoding.UTF8.GetBytes(response);
             context.Response.ContentLength64 = buffer.Length;
             context.Response.OutputStream.Write(buffer, 0, buffer.Length);
+
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("Waiting for timings reset... Done!");
+            Console.ForegroundColor = ConsoleColor.Gray;
         }
         else if (method == "GET" && path == "/home.html")
         {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("Serving home page...");
+            Console.ForegroundColor = ConsoleColor.Gray;
+
             string? filename = FindFile("MinecraftHub/home.html");
             if (filename == null)
             {
@@ -151,6 +178,10 @@ class Program
         }
         else if (method == "GET" && path == "/worlds")
         {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("Listing worlds...");
+            Console.ForegroundColor = ConsoleColor.Gray;
+
             string json = ListWorlds();
             byte[] buffer = Encoding.UTF8.GetBytes(json);
             context.Response.ContentLength64 = buffer.Length;
@@ -158,6 +189,10 @@ class Program
         }
         else if (method == "GET" && path == "/active-worlds")
         {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("Listing active worlds...");
+            Console.ForegroundColor = ConsoleColor.Gray;
+
             string json = ListActiveWorlds();
             byte[] buffer = Encoding.UTF8.GetBytes(json);
             context.Response.ContentLength64 = buffer.Length;
@@ -165,6 +200,9 @@ class Program
         }
         else
         {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine($"Unknown request: {method} {path}");
+            Console.ForegroundColor = ConsoleColor.Gray;
             context.Response.StatusCode = (int)HttpStatusCode.NotFound;
         }
 
@@ -173,6 +211,10 @@ class Program
 
     private static void RespondWithFile(HttpListenerContext context, string filename)
     {
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine($"Responding with file: {filename}");
+        Console.ForegroundColor = ConsoleColor.Gray;
+
         string response = File.ReadAllText(filename);
         byte[] buffer = Encoding.UTF8.GetBytes(response);
         context.Response.ContentLength64 = buffer.Length;
@@ -181,7 +223,7 @@ class Program
 
     private static string ListWorlds()
     {
-        var filename = FindLinuxFile("scripts/06-get-worlds-json.sh");
+        var filename = FindLinuxFile("scripts/70-get-worlds-json.sh");
         if (filename == null)
         {
             Console.WriteLine("ERROR: Could not find script to list worlds.");
@@ -197,7 +239,7 @@ class Program
                     ? "wsl.exe"
                     : "/bin/bash",
                 Arguments = isWindows
-                    ? $"-e \"{filename}\""
+                    ? $"-u root -e \"{filename}\""
                     : $"-c \"{filename}\"",
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
@@ -240,7 +282,7 @@ class Program
                     ? "wsl.exe"
                     : "/bin/bash",
                 Arguments = isWindows
-                    ? $"-e \"{filename}\""
+                    ? $"-u root -e \"{filename}\""
                     : $"-c \"{filename}\"",
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
@@ -285,7 +327,7 @@ class Program
                     ? "wsl.exe"
                     : "/bin/bash",
                 Arguments = isWindows
-                    ? $"-e \"{filename}\" \"{worldName}\" \"{worldDescription}\""
+                    ? $"-u root -e \"{filename}\" \"{worldName}\" \"{worldDescription}\""
                     : $"-c \"{filename} '{worldName}' '{worldDescription}'\"",
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
@@ -331,7 +373,7 @@ class Program
                     ? "wsl.exe"
                     : "/bin/bash",
                 Arguments = isWindows
-                    ? $"-e \"{filename}\" \"{worldName}\" \"{slot}\""
+                    ? $"-u root -e \"{filename}\" \"{worldName}\" \"{slot}\""
                     : $"-c \"{filename} '{worldName}' '{slot}'\"",
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
@@ -374,7 +416,7 @@ class Program
                     ? "wsl.exe"
                     : "/bin/bash",
                 Arguments = isWindows
-                    ? $"-e \"{filename}\" \"{slot}\""
+                    ? $"-u root -e \"{filename}\" \"{slot}\""
                     : $"-c \"{filename} '{slot}'\"",
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
@@ -412,7 +454,9 @@ class Program
             if (File.Exists(check))
             {
                 // if the file exists, return the full path
+                Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine($"Found file: {check}");
+                Console.ForegroundColor = ConsoleColor.Gray;
                 return check;
             }
 
@@ -421,7 +465,9 @@ class Program
         }
 
         // if the file was not found in any parent directory, return null
+        Console.ForegroundColor = ConsoleColor.Red;
         Console.WriteLine($"Could not find file: {filename}");
+        Console.ForegroundColor = ConsoleColor.Gray;
         return null;
     }
 
