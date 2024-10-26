@@ -7,4 +7,4 @@
 #
 
 source $(dirname $0)/-functions.sh
-mc_world_default_files_copy $1
+mc_world_default_files_copy "$1"

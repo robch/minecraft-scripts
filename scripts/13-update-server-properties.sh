@@ -7,4 +7,4 @@
 #
 
 source $(dirname $0)/-functions.sh
-mc_world_server_properties_update $1 $2
+mc_world_server_properties_update "$1" "$2"
