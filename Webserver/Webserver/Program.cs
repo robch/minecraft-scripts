@@ -15,7 +15,7 @@ class Program
 
     static void Main()
     {
-        const string url = "http://localhost:8080/";
+        const string url = "http://*:8080/";
         HttpListener listener = new HttpListener();
         listener.Prefixes.Add(url);
         listener.Start();
@@ -46,11 +46,6 @@ class Program
         {
             context.Response.StatusCode = (int)HttpStatusCode.OK;
             context.Response.OutputStream.Close();
-        }
-        else if (method == "GET" && path == "/")
-        {
-            ConsoleColorWriteLine(ConsoleColor.Green, "Hello, world!");
-            WriteUtf8Response(context, "Hello, world!");
         }
         else if (method == "POST" && path == "/create-world")
         {
@@ -91,7 +86,7 @@ class Program
             WriteUtf8Response(context, $"Timings Reset for slot {slot}.");
             ConsoleColorWriteLine(ConsoleColor.Green, "Waiting for timings reset... Done!");
         }
-        else if (method == "GET" && path == "/home.html")
+        else if (method == "GET" && (path == "/home.html" || path == "/"))
         {
             ConsoleColorWriteLine(ConsoleColor.Green, "Serving home.html...");
             FindFileAndRespondWithText(context, "MinecraftHub/home.html", "text/html");

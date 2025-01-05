@@ -238,7 +238,7 @@ mc_world_java_jar_fq_filename_get_or_default() {
 # Parameters: None
 #
 mc_paper_version_latest_get() {
-  PAPER_API="https://papermc.io/api/v2/projects/paper"
+  PAPER_API="https://api.papermc.io/v2/projects/paper"
   PAPER_VERSION=$(curl -s $PAPER_API | jq '.versions | last')
   echo $PAPER_VERSION | tr -d '"'
 }
@@ -263,7 +263,7 @@ mc_paper_version_get_or_default() {
 
 mc_paper_version_build_latest_get() {
   PAPER_VERSION=$(mc_paper_version_get_or_default $1)
-  PAPER_API="https://papermc.io/api/v2/projects/paper/versions/$PAPER_VERSION/builds"
+  PAPER_API="https://api.papermc.io/v2/projects/paper/versions/$PAPER_VERSION/builds"
 
   # get the last build's build number
   curl -s $PAPER_API | jq '.builds | last | .build'
@@ -294,7 +294,7 @@ mc_paper_version_build_get_or_default() {
 mc_paper_java_jar_url_get() {
   PAPER_VERSION=$(mc_paper_version_get_or_default $1)
   PAPER_BUILD=$(mc_paper_version_build_get_or_default $1 $2)
-  echo "https://papermc.io/api/v2/projects/paper/versions/$PAPER_VERSION/builds/$PAPER_BUILD/downloads/paper-$PAPER_VERSION-$PAPER_BUILD.jar"
+  echo "https://api.papermc.io/v2/projects/paper/versions/$PAPER_VERSION/builds/$PAPER_BUILD/downloads/paper-$PAPER_VERSION-$PAPER_BUILD.jar"
 }
 
 # Function: mc_paper_java_jar_download
@@ -323,7 +323,7 @@ mc_paper_java_jar_download() {
   if [ $(stat -c%s $JAR_FQ_FILE) -lt 1000000 ]; then
     echo -e "\e[31mDownload failed. File is too small.\e[0m"
     echo -e "\e[31mCheck the version and build number and try again.\e[0m"
-    echo -e "\e[31mCheck https://papermc.io/downloads/paper for the latest version and build number.\e[0m"
+    echo -e "\e[31mCheck https://api.papermc.io/v2/projects/paper for the latest version and build number.\e[0m"
     exit 1
   fi
 
@@ -877,6 +877,9 @@ mc_service_slot_wait_for_timings_reset() {
     if [[ $STATUS == *"Timings Reset"* ]]; then
       echo -e "\e[32mTimings Reset\e[0m"
       break
+    elif [[ $STATUS == *"For help, type"* ]]; then
+      echo -e "\e[32mTimings Reset\e[0m"
+      break
     fi
     sleep 1
   done
@@ -975,3 +978,5 @@ mc_test_overall() {
     mc_test_paper_get_version_and_build_functions $1 $2
   fi
 }
+
+# mc_test_overall $1 $2

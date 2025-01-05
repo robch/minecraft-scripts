@@ -6,5 +6,5 @@
 # EXAMPLE:  13-update-server-properties.sh World1 1
 #
 
-source $(dirname $0)/-functions.sh
+source $(dirname $0)/_functions.sh
 mc_world_server_properties_update "$1" "$2"

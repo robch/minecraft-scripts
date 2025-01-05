@@ -6,5 +6,5 @@
 # EXAMPLE:  24-get-service-world-name.sh 1
 #
 
-source $(dirname $0)/-functions.sh
+source $(dirname $0)/_functions.sh
 mc_service_slot_world_name_get_or_default $1

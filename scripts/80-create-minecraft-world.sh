@@ -6,5 +6,5 @@
 # EXAMPLE:  80-create-minecraft-world.sh World1 "My first world" 1.21 130
 #
 
-source $(dirname $0)/-functions.sh
+source $(dirname $0)/_functions.sh
 mc_world_create "$1" "$2" "$3" "$4"

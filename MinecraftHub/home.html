@@ -99,7 +99,7 @@
 
         async function startWorldInSlot(world, slot) {
             try {
-                const response = await fetch(`http://localhost:8080/load-world?name=${world}&slot=${slot}`);
+                const response = await fetch(`/load-world?name=${world}&slot=${slot}`);
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 } else {
@@ -112,7 +112,7 @@
 
         async function waitForTimingReset(worldName, slot) {
             try {
-                const response = await fetch(`http://localhost:8080/wait-for-timing-reset?slot=${slot}`);
+                const response = await fetch(`/wait-for-timing-reset?slot=${slot}`);
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 } else {
@@ -171,7 +171,7 @@
             const btns = document.getElementsByClassName("myButton");
 
             try {
-                const response = await fetch('http://localhost:8080/worlds');
+                const response = await fetch('/worlds');
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
@@ -206,7 +206,7 @@
             const activeWorld2 = document.getElementById("activeWorld2");
 
             try {
-                const response = await fetch('http://localhost:8080/active-worlds');
+                const response = await fetch('/active-worlds');
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
@@ -524,7 +524,7 @@ document.getElementById("createNW").addEventListener("click", function() {
         };
 
         try {
-            const response = await fetch('http://localhost:8080/create-world', {
+            const response = await fetch('/create-world', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
