@@ -6,5 +6,5 @@
 # EXAMPLE:  70-get-worlds-json.sh
 #
 
-source $(dirname $0)/-functions.sh
+source $(dirname $0)/_functions.sh
 mc_worlds_json_get

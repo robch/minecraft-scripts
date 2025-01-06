@@ -6,5 +6,5 @@
 # EXAMPLE:  12-check-world-files.sh my-world
 #
 
-source $(dirname $0)/-functions.sh
-mc_world_default_files_copy $1
+source $(dirname $0)/_functions.sh
+mc_world_default_files_copy "$1"

@@ -97,40 +97,37 @@
             : null;
         }
 
-        function startWorldInSlot(world, slot) {
-          try {
-            fetch(`http://localhost:8080/load-world?name=${world}&slot=${slot}`)
-              .then(response => {
+        async function startWorldInSlot(world, slot) {
+            try {
+                const response = await fetch(`/load-world?name=${world}&slot=${slot}`);
                 if (!response.ok) {
-                  throw new Error('Network response was not ok');
+                    throw new Error('Network response was not ok');
                 } else {
-                  console.log('load-world succeeded!');
+                    console.log('load-world succeeded!');
                 }
-              });
-          } catch (error) {
-            console.error('Error:', error);
-          }
+            } catch (error) {
+                console.error('Error:', error);
+            }
         }
 
-        function waitForTimingReset(worldName, slot) {
-          try {
-            fetch(`http://localhost:8080/wait-for-timing-reset?slot=${slot}`)
-              .then(response => {
+        async function waitForTimingReset(worldName, slot) {
+            try {
+                const response = await fetch(`/wait-for-timing-reset?slot=${slot}`);
                 if (!response.ok) {
-                  throw new Error('Network response was not ok');
+                    throw new Error('Network response was not ok');
                 } else {
                     hideLoader();
-                    successCap.innerText = 'Success! Your world has been loaded!'
+                    successCap.innerText = 'Success! Your world has been loaded!';
                     successSound.play();
                     netherPortalAmbient.pause(); // Stop the ambient sound
                     netherPortalAmbient.currentTime = 0; // Reset the sound
-                    loadActiveWorlds();
+                    await loadActiveWorlds();
+                    await loadActiveWorlds();
                     console.log('timing reset!!');
                 }
-              });
-          } catch (error) {
-            console.error('Error:', error);
-          }
+            } catch (error) {
+                console.error('Error:', error);
+            }
         }
 
         var buttonClickSound = new Audio('./minecraft-click-cropped.mp3');
@@ -157,22 +154,31 @@
         function flintAndSteelSound () {
             flintSteel.play();
         }
-        
-    
-        function loadWorldButtons() {
-            var buttonContainer = document.getElementById("buttonContainer");
-            buttonContainer.innerHTML= "";
-            var btns = document.getElementsByClassName("myButton");
-        fetch('http://localhost:8080/worlds')
-            .then(response => {
+
+        function showLoader() {
+            const loader = document.querySelector(".loader");
+            loader.style.display = "block";
+        }
+
+        function hideLoader() {
+            const loader = document.querySelector(".loader");
+            loader.style.display = "none";
+        }
+
+        async function loadWorldButtons() {
+            const buttonContainer = document.getElementById("buttonContainer");
+            buttonContainer.innerHTML = "";
+            const btns = document.getElementsByClassName("myButton");
+
+            try {
+                const response = await fetch('/worlds');
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
-                return response.json();
-            })
-            .then(worlds => {
+                const worlds = await response.json();
+
                 worlds.forEach((world, index) => {
-                    var btn = document.createElement("BUTTON");
+                    const btn = document.createElement("BUTTON");
                     btn.className = "myButton";
                     btn.innerHTML = `${world.Name}`;
                     btn.id = `${world.Name}`;
@@ -190,47 +196,43 @@
                     });
                     buttonContainer.appendChild(btn);
                 });
-            })
-            .catch(error => {
+            } catch (error) {
                 console.error('Fetching error:', error);
-            });
+            }
         }
 
-        function loadActiveWorlds() {
-    var activeWorld1 = document.getElementById("activeWorld1");
-    var activeWorld2 = document.getElementById("activeWorld2");
+        async function loadActiveWorlds() {
+            const activeWorld1 = document.getElementById("activeWorld1");
+            const activeWorld2 = document.getElementById("activeWorld2");
 
-    fetch('http://localhost:8080/active-worlds')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(slots => {
-            var buttons = document.getElementsByClassName("myButton");
-            slots.forEach(slot => {
+            try {
+                const response = await fetch('/active-worlds');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const slots = await response.json();
 
-                Array.from(buttons).forEach(btn => {
-                    if (btn.innerHTML === slot.Name) {
-                        btn.style.backgroundColor = "purple";
+                const buttons = document.getElementsByClassName("myButton");
+                slots.forEach(slot => {
+                    Array.from(buttons).forEach(btn => {
+                        if (btn.innerHTML === slot.Name) {
+                            btn.style.backgroundColor = "purple";
+                        }
+                    });
+
+                    if (slot.Slot === 1) {
+                        activeWorld1.innerText = `${slot.Name} ${slot.Active}`;
+                    } else if (slot.Slot === 2) {
+                        activeWorld2.innerText = `${slot.Name} ${slot.Active}`;
                     }
                 });
-
-                if (slot.Slot === 1) {
-                    activeWorld1.innerText = `${slot.Name} ${slot.Active}`;
-                } else if (slot.Slot === 2) {
-                    activeWorld2.innerText = `${slot.Name} ${slot.Active}`;
-                }
-            });
-        })
-        .catch(error => {
-            console.error('Fetching error:', error);
-        });
+            } catch (error) {
+                console.error('Fetching error:', error);
+            }
         }
 
-        loadWorldButtons();
-        loadActiveWorlds();
+        loadWorldButtons().then(() => {
+            loadActiveWorlds();
 
         var abtns = document.getElementsByClassName("arrowButton");
         var errorModal = document.getElementById("SWError");
@@ -284,17 +286,25 @@
             errorModal.style.display = "none";
         }
 
-        confirmButton.onclick = function () {
+        confirmButton.onclick = async function () {
             flintSteel.play();
-            loader.style.display = "block";
+            showLoader();
             confirmButton.style.display = "none";
             myGameArea.clear();
             netherPortalAmbient.play(); // Start playing the ambient sound
             const world = getActiveButtonWorld();
-            startWorldInSlot(world, slot);
-            waitForTimingReset(world, slot);
-            successCap.innerText = 'Loading your world...';
-        }
+
+            try {
+                successCap.innerText = 'Loading your world...';
+                await startWorldInSlot(world, slot);
+                await waitForTimingReset(world, slot);
+            } catch (error) {
+                console.error('Error in world loading:', error);
+                errorSound.play();
+            } finally {
+                hideLoader();
+            }
+        };
     
         window.onclick = function(event) {
             if (event.target == errorModal) {
@@ -306,7 +316,7 @@
                 successModal.style.display = "none";
             }
         }
-
+    });
 
 
     
@@ -501,48 +511,42 @@ document.getElementById("createNW").addEventListener("click", function() {
     }
   });
 
-  document.getElementById('myForm').addEventListener('submit', async (event) => {
-    event.preventDefault();
+    document.getElementById('myForm').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        showLoader();
 
-  // Display the loader as soon as the form is submitted
-  var loader = document.querySelector(".loader");
-  loader.style.display = "block";
+        const worldName = document.getElementById('WorldName').value;
+        const worldDescription = document.getElementById('worldDescription').value;
 
-  const worldName = document.getElementById('WorldName').value;
-    const worldDescription = document.getElementById('worldDescription').value;
+        const requestData = {
+            Name: worldName,
+            Description: worldDescription,
+        };
 
+        try {
+            const response = await fetch('/create-world', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestData)
+            });
 
-  const requestData = {
-    Name: worldName,
-    Description: worldDescription
-  };
+            if (!response.ok) {
+                throw new Error('Failed to create world');
+            }
 
-  try {
-    const response = await fetch('http://localhost:8080/create-world', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(requestData)
+            console.log(await response.text());
+            await loadWorldButtons(); // Refresh the world buttons
+            await loadActiveWorlds();
+            successSound.play();
+        } catch (error) {
+            console.error('Error:', error);
+            errorSound.play();
+        } finally {
+            hideLoader();
+        }
     });
-
-    if (response.ok) {
-      const result = await response.text();
-      console.log(result); // World creation status
-      loadWorldButtons(); // Refresh the world buttons
-      loadActiveWorlds();
-      loader.style.display = "none"; // Hide the loader after the request completes
-      successSound.play();
-    } else {
-      console.error('Failed to create world.');
-      loader.style.display = "none"; // Hide the loader even if there was an error
-    }
-  } catch (error) {
-    console.error('Error:', error);
-    loader.style.display = "none"; // Hide the loader in case of any other error
-  }
-});
-
 
     </script>
 </body>

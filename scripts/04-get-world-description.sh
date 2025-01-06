@@ -7,5 +7,5 @@
 # PRE-REQS: none
 #
 
-source $(dirname $0)/-functions.sh
+source $(dirname $0)/_functions.sh
 mc_world_description_get_or_default "$1"

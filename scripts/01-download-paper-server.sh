@@ -6,5 +6,5 @@
 # EXAMPLE:  bash 01-download-paper-server.sh World1 1.21 130
 # PRE-REQS: none
 
-source $(dirname $0)/-functions.sh
+source $(dirname $0)/_functions.sh
 mc_paper_java_jar_download "$1" "$2" "$3"

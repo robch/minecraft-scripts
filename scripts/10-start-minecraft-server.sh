@@ -9,7 +9,7 @@
 # 00-download-install-jdk21.sh
 #
 
-source $(dirname $0)/-functions.sh
+source $(dirname $0)/_functions.sh
 
 THIS_DIR=$(dirname $0)
 WORLD=$(mc_world_name_get_or_default $1)

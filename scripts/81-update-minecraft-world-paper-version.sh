@@ -6,5 +6,5 @@
 # EXAMPLE:  81-update-minecraft-world-paper-version.sh World1 1.21 130
 #
 
-source $(dirname $0)/-functions.sh
-mc_world_update_paper_version $1 "$2" "$3"
+source $(dirname $0)/_functions.sh
+mc_world_update_paper_version "$1" "$2" "$3"

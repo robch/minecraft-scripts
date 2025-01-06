@@ -6,5 +6,5 @@
 # EXAMPLE:  82-update-minecraft-description.sh World1 "My first world"
 #
 
-source $(dirname $0)/-functions.sh
-mc_world_update_description $1 "$2"
+source $(dirname $0)/_functions.sh
+mc_world_update_description "$1" "$2"

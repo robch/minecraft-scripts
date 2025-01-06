@@ -6,5 +6,5 @@
 # EXAMPLE:  21-start-service.sh 1
 #
 
-source $(dirname $0)/-functions.sh
+source $(dirname $0)/_functions.sh
 mc_service_slot_start $1
