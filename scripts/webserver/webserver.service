@@ -1,0 +1,13 @@
+[Unit]
+Description=Minecraft Webserver
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/dotnet /data/src/minecraft-scripts/Webserver/Webserver/bin/Debug/net8.0/Webserver.dll
+WorkingDirectory=/data/src/minecraft-scripts/Webserver/Webserver
+Restart=always
+RestartSec=10
+User=www-data
+
+[Install]
+WantedBy=multi-user.target
