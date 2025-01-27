@@ -15,7 +15,7 @@ class Program
 
     static void Main()
     {
-        const string url = "http://*:8080/";
+        const string url = "http://localhost:8080/";
         HttpListener listener = new HttpListener();
         listener.Prefixes.Add(url);
         listener.Start();
@@ -36,12 +36,10 @@ class Program
         context.Response.AddHeader("Access-Control-Allow-Origin", "*");
         context.Response.AddHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
         context.Response.AddHeader("Access-Control-Allow-Headers", "Content-Type");
+        context.Response.ContentType = "application/json";
 
         ConsoleColorWriteLine(ConsoleColor.DarkGreen, $"\nReceived {method} request for {path}");
 
-        context.Response.ContentType = "application/json";
-
-        // Handle OPTIONS request
         if (method == "OPTIONS")
         {
             context.Response.StatusCode = (int)HttpStatusCode.OK;
@@ -49,6 +47,7 @@ class Program
         }
         else if (method == "POST" && path == "/create-world")
         {
+            DemandValidUser(context);
             ConsoleColorWriteLine(ConsoleColor.Green, "Creating a new world...");
 
             // Handle POST request to create a new world
@@ -67,6 +66,7 @@ class Program
         }
         else if (method == "GET" && path == "/load-world")
         {
+            DemandValidUser(context);
             ConsoleColorWriteLine(ConsoleColor.Green, "Loading a world...");
 
             // Execute the shell command to load the world into the slot specified
@@ -77,6 +77,7 @@ class Program
         }
         else if (method == "GET" && path == "/wait-for-timing-reset")
         {
+            DemandValidUser(context);
             ConsoleColorWriteLine(ConsoleColor.Green, "Waiting for timings reset...");
 
             // Execute the shell command to load the world into the slot specified
@@ -138,12 +139,14 @@ class Program
         }
         else if (method == "GET" && path == "/worlds")
         {
+            DemandValidUser(context);
             ConsoleColorWriteLine(ConsoleColor.Green, "Listing worlds...");
             string json = ListWorlds();
             WriteUtf8Response(context, json);
         }
         else if (method == "GET" && path == "/active-worlds")
         {
+            DemandValidUser(context);
             ConsoleColorWriteLine(ConsoleColor.Green, "Listing active worlds...");
             string json = ListActiveWorlds();
             WriteUtf8Response(context, json);
@@ -162,6 +165,36 @@ class Program
         Console.ForegroundColor = color;
         Console.WriteLine(message);
         Console.ForegroundColor = ConsoleColor.Gray;
+    }
+
+    private static bool IsValidUser(string userName, string password)
+    {
+        return userName == "admin" && password == "password"; // hack for now
+    }
+
+    private static void DemandValidUser(HttpListenerContext context)
+    {
+        // check auth header, it's in the format "Basic <base64encoded username:password>"
+        string? authHeader = context.Request.Headers["Authorization"];
+        if (authHeader == null || !authHeader.StartsWith("Basic "))
+        {
+            context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+            context.Response.OutputStream.Close();
+            throw new Exception("Unauthorized");
+        }
+
+        // decode the base64 string
+        string base64 = authHeader.Substring("Basic ".Length);
+        string decoded = Encoding.UTF8.GetString(Convert.FromBase64String(base64));
+
+        // split the username and password
+        string[] parts = decoded.Split(':');
+        if (parts.Length != 2 || !IsValidUser(parts[0], parts[1]))
+        {
+            context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+            context.Response.OutputStream.Close();
+            throw new Exception("Unauthorized");
+        }
     }
 
     private static void WriteUtf8Response(HttpListenerContext context, string response)

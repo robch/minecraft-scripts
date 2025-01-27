@@ -1,553 +1,589 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Minecraft Server hub</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Minecraft Server hub</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
+
 <body onload="startGame()">
 
-    <!-- todo -->
-    <!-- after user clicks "submit" on that, but before you call the webserver w/ fetch you could display the loader -->
-    <!-- todo -->
+  <!-- todo -->
+  <!-- after user clicks "submit" on that, but before you call the webserver w/ fetch you could display the loader -->
+  <!-- todo -->
 
 
-    <h1>Welcome to my minecraft server hub</h1>
-    <div class="mycontainer">
-        <div class="active_servers">
-            <h1>Slot 1</h1>
-            <p id="activeWorld1"></p>
-            <p>IP: 172.29.156.230:25565</p>
-            <button class="arrowButton" id="1" onclick="playSound()">Activate</button>
-        </div>
-        <div>
-        </div>
+  <h1>Welcome to my minecraft server hub</h1>
+  <div class="mycontainer">
+    <div class="active_servers">
+      <h1>Slot 1</h1>
+      <p id="activeWorld1"></p>
+      <p>IP: 172.29.156.230:25565</p>
+      <button class="arrowButton" id="1" onclick="playSound()">Activate</button>
     </div>
-
-    <div class="mycontainer">
-        <div class="active_servers">
-            <h1>Slot 2</h1>
-            <p id="activeWorld2"></p>
-            <p>IP: 172.29.156.230:25566</p>
-            <button class="arrowButton" id="2" onclick="playSound()">Activate</button>
-        </div>
-        <div>
-        </div>
+    <div>
     </div>
+  </div>
 
-    <div id="worldDiv" class="worlds">
-        <div class="catalogue">
-            <h2>Different worlds</h2>
-            <div id="buttonContainer">
-                <!-- Buttons will be appended here by JavaScript -->
-            </div>
-            <button id="createNW" onclick="playSound()">Create New World</button>
-        </div>
+  <div class="mycontainer">
+    <div class="active_servers">
+      <h1>Slot 2</h1>
+      <p id="activeWorld2"></p>
+      <p>IP: 172.29.156.230:25566</p>
+      <button class="arrowButton" id="2" onclick="playSound()">Activate</button>
     </div>
-    
-    <div id="SWError" class="modal">
+    <div>
+    </div>
+  </div>
 
-        <!-- Modal content -->
-        <div class="modal-content">
-          <span class="close"  onclick="playSound()">&times;</span>
-          <p>Error please select a world</p>
-          <button class="dismiss_OK" onclick="playSound()">okay</button>
-        </div>
-        </div>
-
-      <div id="Success" class="modal">
-
-        <!-- Modal content -->
-        <div class="modal-content">
-          <span class="close"  onclick="playSound()">&times;</span>
-          <p id="successCap">Please confirm that you want to start this world by hitting the confirm button</p>
-          <div class="loader"></div>
-          <button class="confirm" onclick="playSound()">confirm</button>
-        </div>
+  <div id="worldDiv" class="worlds">
+    <div class="catalogue">
+      <h2>Different worlds</h2>
+      <div id="buttonContainer">
+        <!-- Buttons will be appended here by JavaScript -->
       </div>
+      <button id="createNW" onclick="playSound()">Create New World</button>
+    </div>
+  </div>
 
-    <!-- CreateNew World inside modal-->
-    <div id="CreateWorldModal" class="modal">
-        <!-- Modal content -->
-        <div class="modal-content">
-            <span class="close"  onclick="playSound()">&times;</span>
-            <p>Please enter the world name and the description of the world</p>
-            <form id="myForm">
-                <label for="fname">World Name:</label>
-                <input type="text" id="WorldName" name="WorldName"><br><br>
-                <label for="lname">Description</label>
-                <input type="text" id="worldDescription" name="worldDescription"><br><br>
-                <input type="submit" value="Submit" id="submit" onclick="playSound()">
-            </form>
-            <div class="loader"></div>
-        </div>
-        </div>
+  <div id="SWError" class="modal">
 
-      <script>
-        function hideLoader() {
-            var loader = document.querySelector(".loader");
-            loader.style.display = "none";
-        }
+    <!-- Modal content -->
+    <div class="modal-content">
+      <span class="close" onclick="playSound()">&times;</span>
+      <p>Error please select a world</p>
+      <button class="dismiss_OK" onclick="playSound()">okay</button>
+    </div>
+  </div>
 
-        function getActiveButtonWorld() {
-          var activeButtons = document.getElementsByClassName("active");
-          return activeButtons.length == 1
-            ? activeButtons[0].innerHTML
-            : null;
-        }
+  <div id="Success" class="modal">
 
-        async function startWorldInSlot(world, slot) {
-            try {
-                const response = await fetch(`/load-world?name=${world}&slot=${slot}`);
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                } else {
-                    console.log('load-world succeeded!');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-            }
-        }
+    <!-- Modal content -->
+    <div class="modal-content">
+      <span class="close" onclick="playSound()">&times;</span>
+      <p id="successCap">Please confirm that you want to start this world by hitting the confirm button</p>
+      <div class="loader"></div>
+      <button class="confirm" onclick="playSound()">confirm</button>
+    </div>
+  </div>
 
-        async function waitForTimingReset(worldName, slot) {
-            try {
-                const response = await fetch(`/wait-for-timing-reset?slot=${slot}`);
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                } else {
-                    hideLoader();
-                    successCap.innerText = 'Success! Your world has been loaded!';
-                    successSound.play();
-                    netherPortalAmbient.pause(); // Stop the ambient sound
-                    netherPortalAmbient.currentTime = 0; // Reset the sound
-                    await loadActiveWorlds();
-                    await loadActiveWorlds();
-                    console.log('timing reset!!');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-            }
-        }
+  <!-- CreateNew World inside modal-->
+  <div id="CreateWorldModal" class="modal">
+    <!-- Modal content -->
+    <div class="modal-content">
+      <span class="close" onclick="playSound()">&times;</span>
+      <p>Please enter the world name and the description of the world</p>
+      <form id="myForm">
+        <label for="fname">World Name:</label>
+        <input type="text" id="WorldName" name="WorldName"><br><br>
+        <label for="lname">Description</label>
+        <input type="text" id="worldDescription" name="worldDescription"><br><br>
+        <input type="submit" value="Submit" id="submit" onclick="playSound()">
+      </form>
+      <div class="loader"></div>
+    </div>
+  </div>
 
-        var buttonClickSound = new Audio('./minecraft-click-cropped.mp3');
-        var successSound = new Audio('./Successful_hit.mp3');
-        var errorSound = new Audio('./Random_break.mp3');
-        var flintSteel = new Audio('./Flint_and_steel_click.mp3');
-        var netherPortalAmbient = new Audio('./Nether_portal_ambient.mp3');
-        netherPortalAmbient.loop = true;
-        netherPortalAmbient.volume = 0.3; // set to 30 % max volume
-        errorSound.volume = 0.4;
+  <script>
 
-        function playSound() {
-            buttonClickSound.play();
-        }
+    // whenever the has changes, check if it's #login and if so, remove the hash, and clear the username and password from local storage
 
-        function successSoundEffect () {
-            successSound.play();
-        }
-
-        function errorSoundEffect () {
-            errorSound.play();
-        }
-
-        function flintAndSteelSound () {
-            flintSteel.play();
-        }
-
-        function showLoader() {
-            const loader = document.querySelector(".loader");
-            loader.style.display = "block";
-        }
-
-        function hideLoader() {
-            const loader = document.querySelector(".loader");
-            loader.style.display = "none";
-        }
-
-        async function loadWorldButtons() {
-            const buttonContainer = document.getElementById("buttonContainer");
-            buttonContainer.innerHTML = "";
-            const btns = document.getElementsByClassName("myButton");
-
-            try {
-                const response = await fetch('/worlds');
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                const worlds = await response.json();
-
-                worlds.forEach((world, index) => {
-                    const btn = document.createElement("BUTTON");
-                    btn.className = "myButton";
-                    btn.innerHTML = `${world.Name}`;
-                    btn.id = `${world.Name}`;
-                    btn.addEventListener("click", function() {
-                        playSound(); // Play sound on button click
-                        if (this.classList.contains("active")) {
-                            this.classList.remove("active");
-                        } else {
-                            const activeButtons = document.getElementsByClassName("active");
-                            for (let x = 0; x < activeButtons.length; x++) {
-                                activeButtons[x].classList.remove("active");
-                            }
-                            this.classList.add("active");
-                        }
-                    });
-                    buttonContainer.appendChild(btn);
-                });
-            } catch (error) {
-                console.error('Fetching error:', error);
-            }
-        }
-
-        async function loadActiveWorlds() {
-            const activeWorld1 = document.getElementById("activeWorld1");
-            const activeWorld2 = document.getElementById("activeWorld2");
-
-            try {
-                const response = await fetch('/active-worlds');
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                const slots = await response.json();
-
-                const buttons = document.getElementsByClassName("myButton");
-                slots.forEach(slot => {
-                    Array.from(buttons).forEach(btn => {
-                        if (btn.innerHTML === slot.Name) {
-                            btn.style.backgroundColor = "purple";
-                        }
-                    });
-
-                    if (slot.Slot === 1) {
-                        activeWorld1.innerText = `${slot.Name} ${slot.Active}`;
-                    } else if (slot.Slot === 2) {
-                        activeWorld2.innerText = `${slot.Name} ${slot.Active}`;
-                    }
-                });
-            } catch (error) {
-                console.error('Fetching error:', error);
-            }
-        }
-
-        loadWorldButtons().then(() => {
-            loadActiveWorlds();
-
-        var abtns = document.getElementsByClassName("arrowButton");
-        var errorModal = document.getElementById("SWError");
-        var successModal = document.getElementById("Success");
-        var CreateWorldModal = document.getElementById("CreateWorldModal")
-        var successCap = document.getElementById("successCap");
-        var closeButtons = document.getElementsByClassName("close");
-        var loader = document.querySelector(".loader");
-        var okButton = document.querySelector(".dismiss_OK");
-        var confirmButton = document.querySelector(".confirm");
-        let slot = null;
-        var activeWorld1 = document.getElementById("activeWorld1");
-        var activeWorld2 = document.getElementById("activeWorld2");
-
-        document.getElementById('1').addEventListener('click', function(){
-            slot = 1;
-            console.log("slot is set to:", slot);
-        });
-        
-        document.getElementById('2').addEventListener('click', function(){
-            slot = 2;
-            console.log("slot is set to:", slot);
-        });
-    
-        for (var i = 0; i < abtns.length; i++) {
-            abtns[i].addEventListener("click", function() {
-                var activeButtons = document.getElementsByClassName("active");
-                if (activeButtons.length != 1) {
-                    errorModal.style.display = "block";
-                    errorSound.play();
-                } else {
-                    var world = activeButtons[0].innerHTML;
-                    successModal.style.display = "block";
-                    successCap.innerText = `Please confirm that you want to start ${world} by hitting the confirm button`;
-                    world.bold()
-                    loader.style.display = "none";
-                    confirmButton.style.display = "inline";
-                }
-            });
-        }
-    
-        Array.from(closeButtons).forEach(button => {
-            button.onclick = function() {
-                playSound();
-                this.parentElement.parentElement.style.display = "none";
-            }
-        });
-    
-        okButton.onclick = function() {
-            playSound();
-            errorModal.style.display = "none";
-        }
-
-        confirmButton.onclick = async function () {
-            flintSteel.play();
-            showLoader();
-            confirmButton.style.display = "none";
-            myGameArea.clear();
-            netherPortalAmbient.play(); // Start playing the ambient sound
-            const world = getActiveButtonWorld();
-
-            try {
-                successCap.innerText = 'Loading your world...';
-                await startWorldInSlot(world, slot);
-                await waitForTimingReset(world, slot);
-            } catch (error) {
-                console.error('Error in world loading:', error);
-                errorSound.play();
-            } finally {
-                hideLoader();
-            }
-        };
-    
-        window.onclick = function(event) {
-            if (event.target == errorModal) {
-                playSound();
-                errorModal.style.display = "none";
-            }
-            if (event.target == successModal) {
-                playSound();
-                successModal.style.display = "none";
-            }
-        }
+    document.addEventListener('DOMContentLoaded', function() {
+      if (window.location.hash === '#login') {
+        window.location.hash = ''; // remove the hash
+        localStorage.removeItem('username');
+        localStorage.removeItem('password');
+        username = null;
+        password = null;
+      }
     });
 
+    // load the username and password from local storage
+    let username = localStorage.getItem('username');
+    let password = localStorage.getItem('password');
 
-    
-// Array to store multiple game pieces
-var myGamePieces = [];
-var rowCount = 0; // Variable to track the number of rows
-var falling = false; // Flag to indicate if the blocks are currently falling
-var disappearing = false; // Flag to indicate if blocks are disappearing
-var rowCreationInterval = 800; // Interval between creating rows (in milliseconds)
+    username = username || prompt('Enter your username');
+    password = password || prompt('Enter your password');
 
-function startGame() {
-    // Initialize the game area (canvas)
-    myGameArea.start();
-    
-    // Start creating rows
-    createRows();
-    
-    // Set an interval to update the game area continuously, creating the falling effect
-    myGameArea.interval = setInterval(updateGameArea, 10); // 10 milliseconds per update for smooth animation
-}
+    async function fetchWithAuth(url, options = {}) {
+      const base64Credentials = btoa(`${username}:${password}`);
+      
+      const defaultHeaders = {
+          'Authorization': `Basic ${base64Credentials}`
+      };
 
-// Function to create 5 rows of blocks
-function createRows() {
-    if (rowCount < 5) {
+      options.headers = {
+          ...defaultHeaders,
+          ...options.headers
+      };
+
+      const response = await fetch(url, options);
+      return response;
+    }
+
+    function hideLoader() {
+      var loader = document.querySelector(".loader");
+      loader.style.display = "none";
+    }
+
+    function getActiveButtonWorld() {
+      var activeButtons = document.getElementsByClassName("active");
+      return activeButtons.length == 1
+        ? activeButtons[0].innerHTML
+        : null;
+    }
+
+    async function startWorldInSlot(world, slot) {
+      try {
+        const response = await fetchWithAuth(`/load-world?name=${world}&slot=${slot}`);
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        } else {
+          console.log('load-world succeeded!');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    }
+
+    async function waitForTimingReset(worldName, slot) {
+      try {
+        const response = await fetchWithAuth(`/wait-for-timing-reset?slot=${slot}`);
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        } else {
+          hideLoader();
+          successCap.innerText = 'Success! Your world has been loaded!';
+          successSound.play();
+          netherPortalAmbient.pause(); // Stop the ambient sound
+          netherPortalAmbient.currentTime = 0; // Reset the sound
+          await loadActiveWorlds();
+          await loadActiveWorlds();
+          console.log('timing reset!!');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    }
+
+    var buttonClickSound = new Audio('./minecraft-click-cropped.mp3');
+    var successSound = new Audio('./Successful_hit.mp3');
+    var errorSound = new Audio('./Random_break.mp3');
+    var flintSteel = new Audio('./Flint_and_steel_click.mp3');
+    var netherPortalAmbient = new Audio('./Nether_portal_ambient.mp3');
+    netherPortalAmbient.loop = true;
+    netherPortalAmbient.volume = 0.3; // set to 30 % max volume
+    errorSound.volume = 0.4;
+
+    function playSound() {
+      buttonClickSound.play();
+    }
+
+    function successSoundEffect() {
+      successSound.play();
+    }
+
+    function errorSoundEffect() {
+      errorSound.play();
+    }
+
+    function flintAndSteelSound() {
+      flintSteel.play();
+    }
+
+    function showLoader() {
+      const loader = document.querySelector(".loader");
+      loader.style.display = "block";
+    }
+
+    function hideLoader() {
+      const loader = document.querySelector(".loader");
+      loader.style.display = "none";
+    }
+
+    async function loadWorldButtons() {
+      const buttonContainer = document.getElementById("buttonContainer");
+      buttonContainer.innerHTML = "";
+      const btns = document.getElementsByClassName("myButton");
+
+      try {
+        const response = await fetchWithAuth('/worlds');
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        const worlds = await response.json();
+
+        worlds.forEach((world, index) => {
+          const btn = document.createElement("BUTTON");
+          btn.className = "myButton";
+          btn.innerHTML = `${world.Name}`;
+          btn.id = `${world.Name}`;
+          btn.addEventListener("click", function () {
+            playSound(); // Play sound on button click
+            if (this.classList.contains("active")) {
+              this.classList.remove("active");
+            } else {
+              const activeButtons = document.getElementsByClassName("active");
+              for (let x = 0; x < activeButtons.length; x++) {
+                activeButtons[x].classList.remove("active");
+              }
+              this.classList.add("active");
+            }
+          });
+          buttonContainer.appendChild(btn);
+        });
+      } catch (error) {
+        console.error('Fetching error:', error);
+      }
+    }
+
+    async function loadActiveWorlds() {
+      const activeWorld1 = document.getElementById("activeWorld1");
+      const activeWorld2 = document.getElementById("activeWorld2");
+
+      try {
+        const response = await fetchWithAuth('/active-worlds');
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        const slots = await response.json();
+
+        const buttons = document.getElementsByClassName("myButton");
+        slots.forEach(slot => {
+          Array.from(buttons).forEach(btn => {
+            if (btn.innerHTML === slot.Name) {
+              btn.style.backgroundColor = "purple";
+            }
+          });
+
+          if (slot.Slot === 1) {
+            activeWorld1.innerText = `${slot.Name} ${slot.Active}`;
+          } else if (slot.Slot === 2) {
+            activeWorld2.innerText = `${slot.Name} ${slot.Active}`;
+          }
+        });
+      } catch (error) {
+        console.error('Fetching error:', error);
+      }
+    }
+
+    loadWorldButtons().then(() => {
+      loadActiveWorlds();
+
+      var abtns = document.getElementsByClassName("arrowButton");
+      var errorModal = document.getElementById("SWError");
+      var successModal = document.getElementById("Success");
+      var CreateWorldModal = document.getElementById("CreateWorldModal")
+      var successCap = document.getElementById("successCap");
+      var closeButtons = document.getElementsByClassName("close");
+      var loader = document.querySelector(".loader");
+      var okButton = document.querySelector(".dismiss_OK");
+      var confirmButton = document.querySelector(".confirm");
+      let slot = null;
+      var activeWorld1 = document.getElementById("activeWorld1");
+      var activeWorld2 = document.getElementById("activeWorld2");
+
+      document.getElementById('1').addEventListener('click', function () {
+        slot = 1;
+        console.log("slot is set to:", slot);
+      });
+
+      document.getElementById('2').addEventListener('click', function () {
+        slot = 2;
+        console.log("slot is set to:", slot);
+      });
+
+      for (var i = 0; i < abtns.length; i++) {
+        abtns[i].addEventListener("click", function () {
+          var activeButtons = document.getElementsByClassName("active");
+          if (activeButtons.length != 1) {
+            errorModal.style.display = "block";
+            errorSound.play();
+          } else {
+            var world = activeButtons[0].innerHTML;
+            successModal.style.display = "block";
+            successCap.innerText = `Please confirm that you want to start ${world} by hitting the confirm button`;
+            world.bold()
+            loader.style.display = "none";
+            confirmButton.style.display = "inline";
+          }
+        });
+      }
+
+      Array.from(closeButtons).forEach(button => {
+        button.onclick = function () {
+          playSound();
+          this.parentElement.parentElement.style.display = "none";
+        }
+      });
+
+      okButton.onclick = function () {
+        playSound();
+        errorModal.style.display = "none";
+      }
+
+      confirmButton.onclick = async function () {
+        flintSteel.play();
+        showLoader();
+        confirmButton.style.display = "none";
+        myGameArea.clear();
+        netherPortalAmbient.play(); // Start playing the ambient sound
+        const world = getActiveButtonWorld();
+
+        try {
+          successCap.innerText = 'Loading your world...';
+          await startWorldInSlot(world, slot);
+          await waitForTimingReset(world, slot);
+        } catch (error) {
+          console.error('Error in world loading:', error);
+          errorSound.play();
+        } finally {
+          hideLoader();
+        }
+      };
+
+      window.onclick = function (event) {
+        if (event.target == errorModal) {
+          playSound();
+          errorModal.style.display = "none";
+        }
+        if (event.target == successModal) {
+          playSound();
+          successModal.style.display = "none";
+        }
+      }
+    });
+
+    // Array to store multiple game pieces
+    var myGamePieces = [];
+    var rowCount = 0; // Variable to track the number of rows
+    var falling = false; // Flag to indicate if the blocks are currently falling
+    var disappearing = false; // Flag to indicate if blocks are disappearing
+    var rowCreationInterval = 800; // Interval between creating rows (in milliseconds)
+
+    function startGame() {
+      // Initialize the game area (canvas)
+      myGameArea.start();
+
+      // Start creating rows
+      createRows();
+
+      // Set an interval to update the game area continuously, creating the falling effect
+      myGameArea.interval = setInterval(updateGameArea, 10); // 10 milliseconds per update for smooth animation
+    }
+
+    // Function to create 5 rows of blocks
+    function createRows() {
+      if (rowCount < 5) {
         createNextRow();
         rowCount++;
         setTimeout(createRows, rowCreationInterval); // Staggered row creation with a delay
-    } else {
+      } else {
         if (!falling && !disappearing) {
-            falling = true;
-            // Wait until all rows have been created and settled before starting disappearance
-            checkRowsSettled(() => {
-                makeBlocksDisappear();
-                setTimeout(resetGame, 1000); // Shortened pause before resetting the game (adjust time as needed)
-            });
+          falling = true;
+          // Wait until all rows have been created and settled before starting disappearance
+          checkRowsSettled(() => {
+            makeBlocksDisappear();
+            setTimeout(resetGame, 1000); // Shortened pause before resetting the game (adjust time as needed)
+          });
         }
+      }
     }
-}
 
-// Function to create the next row of blocks
-function createNextRow() {
-    createRow("images/Lime_Concrete.webp", rowCount * 30); // Create a row with the yPosition based on rowCount
-}
+    // Function to create the next row of blocks
+    function createNextRow() {
+      createRow("images/Lime_Concrete.webp", rowCount * 30); // Create a row with the yPosition based on rowCount
+    }
 
-// Function to create a row of 5 blocks
-function createRow(blockType, yPosition) {
-    for (let i = 0; i < 5; i++) {
+    // Function to create a row of 5 blocks
+    function createRow(blockType, yPosition) {
+      for (let i = 0; i < 5; i++) {
         let xPosition = i * 30; // Position each block next to the previous one
         let delay = i * 100; // Delay each block's fall by 100 milliseconds
 
-        setTimeout(function() {
-            let newBlock = new component(30, 30, blockType, xPosition, yPosition, "image");
-            myGamePieces.push(newBlock);
+        setTimeout(function () {
+          let newBlock = new component(30, 30, blockType, xPosition, yPosition, "image");
+          myGamePieces.push(newBlock);
         }, delay);
+      }
     }
-}
 
-// Function to check if all blocks have settled
-function checkRowsSettled(callback) {
-    let intervalCheck = setInterval(function() {
+    // Function to check if all blocks have settled
+    function checkRowsSettled(callback) {
+      let intervalCheck = setInterval(function () {
         let allSettled = myGamePieces.every(block => block.gravitySpeed === 0);
         if (allSettled) {
-            clearInterval(intervalCheck); // Stop checking if all blocks have settled
-            callback(); // Execute the callback to make blocks disappear
+          clearInterval(intervalCheck); // Stop checking if all blocks have settled
+          callback(); // Execute the callback to make blocks disappear
         }
-    }, 100); // Check every 100 milliseconds
-}
+      }, 100); // Check every 100 milliseconds
+    }
 
-// Function to make all blocks disappear
-function makeBlocksDisappear() {
-    disappearing = true; // Set flag to start disappearing
-}
+    // Function to make all blocks disappear
+    function makeBlocksDisappear() {
+      disappearing = true; // Set flag to start disappearing
+    }
 
-// Function to reset the game
-function resetGame() {
-    myGamePieces = []; // Clear the existing blocks
-    rowCount = 0; // Reset row count
-    falling = false; // Reset falling flag
-    disappearing = false; // Reset disappearing flag
-    createRows(); // Start creating rows again
-}
+    // Function to reset the game
+    function resetGame() {
+      myGamePieces = []; // Clear the existing blocks
+      rowCount = 0; // Reset row count
+      falling = false; // Reset falling flag
+      disappearing = false; // Reset disappearing flag
+      createRows(); // Start creating rows again
+    }
 
-var myGameArea = {
-    canvas : document.createElement("canvas"), // Create a canvas element
-    start : function() {
+    var myGameArea = {
+      canvas: document.createElement("canvas"), // Create a canvas element
+      start: function () {
         // Set the dimensions of the canvas
         this.canvas.width = 150;
         this.canvas.height = 280;
-        
+
         // Get the drawing context for the canvas
         this.context = this.canvas.getContext("2d");
-        
+
         // Insert the canvas into the "loader" div instead of directly into the body
         document.querySelector(".loader").appendChild(this.canvas);
-    },
-    clear : function() {
+      },
+      clear: function () {
         // Clear the canvas, wiping away the previous frame
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      }
     }
-}
 
-// Define a component function to create a game piece
-function component(width, height, image, x, y, type) {
-    this.type = type; // The type of the component (in this case, an image)
-    this.width = width; // Width of the block
-    this.height = height; // Height of the block
-    this.image = new Image(); // Create a new image object
-    this.image.src = image; // Set the source of the image to the provided file
-    this.x = x; // Initial x position of the block
-    this.y = y; // Initial y position of the block
-    this.gravity = 0.05; // Gravity value to make the block fall
-    this.gravitySpeed = 0; // Initial speed due to gravity (starts at 0)
-    this.disappearing = false; // Flag to indicate if the block is disappearing
-    
-    // Function to draw the image on the canvas
-    this.update = function() {
+    // Define a component function to create a game piece
+    function component(width, height, image, x, y, type) {
+      this.type = type; // The type of the component (in this case, an image)
+      this.width = width; // Width of the block
+      this.height = height; // Height of the block
+      this.image = new Image(); // Create a new image object
+      this.image.src = image; // Set the source of the image to the provided file
+      this.x = x; // Initial x position of the block
+      this.y = y; // Initial y position of the block
+      this.gravity = 0.05; // Gravity value to make the block fall
+      this.gravitySpeed = 0; // Initial speed due to gravity (starts at 0)
+      this.disappearing = false; // Flag to indicate if the block is disappearing
+
+      // Function to draw the image on the canvas
+      this.update = function () {
         let ctx = myGameArea.context; // Get the context to draw on the canvas
         if (!this.disappearing) {
-            ctx.drawImage(this.image, this.x, this.y, this.width, this.height); // Draw the image at the specified position
+          ctx.drawImage(this.image, this.x, this.y, this.width, this.height); // Draw the image at the specified position
         }
-    }
-    
-    // Function to update the block's position, applying gravity or disappearance
-    this.newPos = function() {
+      }
+
+      // Function to update the block's position, applying gravity or disappearance
+      this.newPos = function () {
         if (!this.disappearing) {
-            this.gravitySpeed += this.gravity; // Increase the speed by the gravity value
-            this.y += this.gravitySpeed; // Move the block down by the current speed
-            this.hitBottom(); // Check if the block has hit the bottom of the canvas or another block
+          this.gravitySpeed += this.gravity; // Increase the speed by the gravity value
+          this.y += this.gravitySpeed; // Move the block down by the current speed
+          this.hitBottom(); // Check if the block has hit the bottom of the canvas or another block
         } else {
-            this.y += 10; // Make the block move down to disappear (adjust speed if needed)
-            if (this.y > myGameArea.canvas.height) {
-                // Remove block if it has fallen past the bottom of the canvas
-                let index = myGamePieces.indexOf(this);
-                if (index > -1) {
-                    myGamePieces.splice(index, 1);
-                }
+          this.y += 10; // Make the block move down to disappear (adjust speed if needed)
+          if (this.y > myGameArea.canvas.height) {
+            // Remove block if it has fallen past the bottom of the canvas
+            let index = myGamePieces.indexOf(this);
+            if (index > -1) {
+              myGamePieces.splice(index, 1);
             }
+          }
         }
-    }
-    
-    // Function to stop the block when it hits the bottom or another block
-    this.hitBottom = function() {
+      }
+
+      // Function to stop the block when it hits the bottom or another block
+      this.hitBottom = function () {
         if (!disappearing) { // Only check for collisions if not disappearing
-            var rockbottom = myGameArea.canvas.height - this.height; // Calculate the bottom position where the block should stop
+          var rockbottom = myGameArea.canvas.height - this.height; // Calculate the bottom position where the block should stop
 
-            // Check for collision with other blocks
-            for (let i = 0; i < myGamePieces.length; i++) {
-                let otherBlock = myGamePieces[i];
-                if (otherBlock !== this && 
-                    this.x < otherBlock.x + otherBlock.width && 
-                    this.x + this.width > otherBlock.x &&
-                    this.y + this.height > otherBlock.y && 
-                    this.y < otherBlock.y + otherBlock.height) {
-                    
-                    rockbottom = otherBlock.y - this.height; // Stop the block above the other block
-                    break;
-                }
-            }
+          // Check for collision with other blocks
+          for (let i = 0; i < myGamePieces.length; i++) {
+            let otherBlock = myGamePieces[i];
+            if (otherBlock !== this &&
+              this.x < otherBlock.x + otherBlock.width &&
+              this.x + this.width > otherBlock.x &&
+              this.y + this.height > otherBlock.y &&
+              this.y < otherBlock.y + otherBlock.height) {
 
-            if (this.y > rockbottom) { // If the block has moved below the bottom or hit another block
-                this.y = rockbottom; // Set the block's position to the bottom or top of the other block
-                this.gravitySpeed = 0; // Stop the block from falling further
+              rockbottom = otherBlock.y - this.height; // Stop the block above the other block
+              break;
             }
+          }
+
+          if (this.y > rockbottom) { // If the block has moved below the bottom or hit another block
+            this.y = rockbottom; // Set the block's position to the bottom or top of the other block
+            this.gravitySpeed = 0; // Stop the block from falling further
+          }
         }
+      }
     }
-}
 
-// Function to continuously update the game area, creating the falling effect
-function updateGameArea() {
-    myGameArea.clear(); // Clear the previous frame
-    
-    // Update and draw each block
-    for (let i = 0; i < myGamePieces.length; i++) {
+    // Function to continuously update the game area, creating the falling effect
+    function updateGameArea() {
+      myGameArea.clear(); // Clear the previous frame
+
+      // Update and draw each block
+      for (let i = 0; i < myGamePieces.length; i++) {
         myGamePieces[i].newPos(); // Update the block's position (applying gravity or disappearance)
         myGamePieces[i].update(); // Draw the block at its new position
+      }
     }
-}
-    
 
-// Creates new world
-document.getElementById("createNW").addEventListener("click", function() {
-    var form = document.getElementById("myForm");
-    if (form.style.display === "none") {
-    CreateWorldModal.style.display = "none";
-    form.style.display = "none";
-    
-    } else {
-    CreateWorldModal.style.display = "block";
-    var loader = document.querySelector(".loader");
-    form.style.display = "block";
-    loader.style.display = "none";
-    }
-  });
+    // Creates new world
+    document.getElementById("createNW").addEventListener("click", function () {
+      var form = document.getElementById("myForm");
+      if (form.style.display === "none") {
+        CreateWorldModal.style.display = "none";
+        form.style.display = "none";
 
-    document.getElementById('myForm').addEventListener('submit', async (event) => {
-        event.preventDefault();
-        showLoader();
-
-        const worldName = document.getElementById('WorldName').value;
-        const worldDescription = document.getElementById('worldDescription').value;
-
-        const requestData = {
-            Name: worldName,
-            Description: worldDescription,
-        };
-
-        try {
-            const response = await fetch('/create-world', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(requestData)
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to create world');
-            }
-
-            console.log(await response.text());
-            await loadWorldButtons(); // Refresh the world buttons
-            await loadActiveWorlds();
-            successSound.play();
-        } catch (error) {
-            console.error('Error:', error);
-            errorSound.play();
-        } finally {
-            hideLoader();
-        }
+      } else {
+        CreateWorldModal.style.display = "block";
+        var loader = document.querySelector(".loader");
+        form.style.display = "block";
+        loader.style.display = "none";
+      }
     });
 
-    </script>
+    document.getElementById('myForm').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      showLoader();
+
+      const worldName = document.getElementById('WorldName').value;
+      const worldDescription = document.getElementById('worldDescription').value;
+
+      const requestData = {
+        Name: worldName,
+        Description: worldDescription,
+      };
+
+      try {
+        const response = await fetchWithAuth('/create-world', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(requestData)
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to create world');
+        }
+
+        console.log(await response.text());
+        await loadWorldButtons(); // Refresh the world buttons
+        await loadActiveWorlds();
+        successSound.play();
+      } catch (error) {
+        console.error('Error:', error);
+        errorSound.play();
+      } finally {
+        hideLoader();
+      }
+    });
+
+  </script>
 </body>
+
 </html>
