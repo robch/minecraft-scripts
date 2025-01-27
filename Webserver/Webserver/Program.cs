@@ -15,7 +15,9 @@ class Program
 
     static void Main()
     {
-        const string url = "http://localhost:8080/";
+        var url = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+            ? "http://localhost:8080/"
+            : "http://*:8080/";
         HttpListener listener = new HttpListener();
         listener.Prefixes.Add(url);
         listener.Start();
